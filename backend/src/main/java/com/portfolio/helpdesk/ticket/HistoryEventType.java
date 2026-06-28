@@ -1,0 +1,16 @@
+package com.portfolio.helpdesk.ticket;
+
+public enum HistoryEventType {
+    CRIACAO,
+    ALTERACAO_STATUS,
+    ALTERACAO_PRIORIDADE,
+    ALTERACAO_CATEGORIA,
+    ATRIBUICAO_TECNICO,
+    ATUALIZACAO_DADOS,
+    COMENTARIO,
+    COMENTARIO_REMOVIDO,
+    ANEXO,
+    REABERTURA,
+    RESOLUCAO,
+    CANCELAMENTO
+}
