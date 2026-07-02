@@ -1,166 +1,150 @@
-# HelpDesk
+# 🛠️ Sistema HelpDesk
 
-Sistema full stack de gerenciamento de chamados com frontend React e backend Spring Boot. O projeto foi padronizado como `HelpDesk` em branding, configurações, documentação e metadados.
+> Sistema Full Stack de Gerenciamento de Chamados desenvolvido com
+> **Java, Spring Boot, React, PostgreSQL e Docker**.
 
-## Funcionalidades
+> **⚠️ Observação:** Este README é uma base profissional pronta para
+> GitHub. Basta substituir os links das imagens/GIFs pelos do seu
+> repositório.
 
-- Autenticação JWT com perfis de acesso.
-- Central de operações com indicadores do suporte.
-- Gestão de chamados com histórico, timeline, categoria e comentários.
-- Painel de gestão para acessos e perfis.
-- Execução local e containerizada com Docker Compose.
+![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)
+![Spring
+Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=for-the-badge&logo=springboot)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
+![JWT](https://img.shields.io/badge/Auth-JWT-black?style=for-the-badge)
 
-## Tecnologias
+------------------------------------------------------------------------
 
-- Backend: Java 21, Spring Boot 3, Spring Web, Data JPA, Security, JWT, Bean Validation, Flyway e PostgreSQL.
-- Frontend: React 19, Vite, TypeScript, Material UI, React Router, Axios, React Hook Form e Zod.
-- Infraestrutura: Docker, Docker Compose e Nginx.
+## 📚 Sobre
 
-## Estrutura do projeto
+O Sistema HelpDesk é uma aplicação Full Stack inspirada em plataformas
+corporativas de atendimento técnico. O objetivo é permitir o
+gerenciamento completo de chamados, usuários, categorias e comentários
+em um ambiente seguro, moderno e responsivo.
 
-```text
+## ✨ Funcionalidades
+
+-   Login com JWT
+-   CRUD de Chamados
+-   CRUD de Usuários
+-   CRUD de Categorias
+-   Comentários por chamado
+-   Dashboard
+-   Pesquisa e filtros
+-   Validação de dados
+-   Swagger/OpenAPI
+-   Docker Compose
+
+## 🏗️ Arquitetura
+
+``` text
+React
+  │
+Axios
+  │
+Spring Boot
+  │
+Spring Security + JWT
+  │
+Services
+  │
+Repositories (JPA)
+  │
+PostgreSQL
+```
+
+## 🛠️ Tecnologias
+
+### Backend
+
+-   Java 21
+-   Spring Boot
+-   Spring Security
+-   Spring Data JPA
+-   Hibernate
+-   JWT
+-   Flyway
+-   Bean Validation
+-   Swagger
+
+### Frontend
+
+-   React
+-   Vite
+-   Material UI
+-   Axios
+
+### Banco
+
+-   PostgreSQL
+
+### Infra
+
+-   Docker
+-   Docker Compose
+-   Nginx
+
+## 📂 Estrutura
+
+``` text
 helpdesk/
-|- backend
-`- frontend
+├── backend/
+├── frontend/
+├── docker-compose.yml
+└── README.md
 ```
 
-## Execução local
+## ▶️ Executando
 
-Pré-requisitos:
-
-- Java 21
-- Maven 3.9+
-- Node 22+
-- Docker Desktop ou Docker Engine
-
-Suba apenas o banco de dados:
-
-```bash
-docker compose up postgres -d
-```
-
-Backend:
-
-```bash
-cd backend
-mvn spring-boot:run
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Opcionalmente, copie o arquivo de exemplo:
-
-```bash
-copy .env.example .env
-```
-
-Endereços locais:
-
-- Frontend: http://localhost:5174
-- API: http://localhost:8081/api
-- Swagger UI: http://localhost:8081/swagger-ui.html
-- Health check: http://localhost:8081/actuator/health
-
-## Execução com Docker
-
-```bash
+``` bash
+git clone https://github.com/matheus-samuel-dev/sistema-helpdesk.git
+cd sistema-helpdesk
 docker compose up --build
 ```
 
-Endereços em Docker:
+Ou execute frontend e backend separadamente.
 
-- Frontend: http://localhost:5174
-- API: http://localhost:8081/api
-- Swagger UI: http://localhost:8081/swagger-ui.html
-- Health check: http://localhost:8081/actuator/health
-- PostgreSQL: `localhost:5434`
+## 🔐 Segurança
 
-Para encerrar:
+-   Spring Security
+-   JWT
+-   Rotas protegidas
+-   Validação de entrada
+-   Tratamento centralizado de exceções
 
-```bash
-docker compose down
+## 📡 Swagger
+
+``` text
+http://localhost:8080/swagger-ui.html
 ```
 
-Para remover também o volume de dados:
+## 📸 Screenshots
 
-```bash
-docker compose down -v
-```
+Adicione aqui: - Login - Dashboard - Chamados - Usuários - Categorias
 
-## Variáveis de ambiente
+## 🚀 Roadmap
 
-Backend:
+-   [x] Autenticação JWT
+-   [x] CRUD de Chamados
+-   [x] CRUD de Usuários
+-   [x] CRUD de Categorias
+-   [x] Docker
+-   [x] Swagger
+-   [ ] Upload de anexos
+-   [ ] Notificações
+-   [ ] Aplicativo Mobile
 
-- `SERVER_PORT` default: `8081`
-- `DB_URL`
-- `DB_USERNAME`
-- `DB_PASSWORD`
-- `JWT_SECRET`
-- `JWT_EXPIRATION_MS`
-- `CORS_ALLOWED_ORIGIN`
+## 👨‍💻 Autor
 
-Frontend:
+**Matheus Samuel**
 
-- `VITE_API_URL` default: `http://localhost:8081/api`
+-   GitHub: https://github.com/matheus-samuel-dev
+-   LinkedIn: https://linkedin.com/in/matheus-samuel-dev
+-   Portfólio: https://matheus-samuel-dev.github.io/Portfolio/
 
-`CORS_ALLOWED_ORIGIN` aceita uma ou mais origens separadas por vírgula. Exemplo:
+## 📄 Licença
 
-```bash
-CORS_ALLOWED_ORIGIN=http://localhost:5174,http://127.0.0.1:5174
-```
-
-## Usuários padrão
-
-O Flyway cria três usuários de demonstração com a senha `Admin@123`.
-
-| Perfil | E-mail |
-|---|---|
-| ADMIN | `admin@helpdesk.com` |
-| TECNICO | `tecnico@helpdesk.com` |
-| CLIENTE | `cliente@helpdesk.com` |
-
-## Endpoints principais
-
-| Método | Endpoint | Acesso |
-|---|---|---|
-| POST | `/api/auth/login` | Público |
-| GET | `/api/auth/me` | Autenticado |
-| GET | `/api/dashboard` | Autenticado |
-| GET/POST | `/api/tickets` | Conforme perfil |
-| GET/PATCH | `/api/tickets/{id}` | Conforme vínculo |
-| GET | `/api/tickets/{id}/history` | Conforme vínculo |
-| GET/POST | `/api/tickets/{id}/comments` | Conforme vínculo |
-| GET/POST/PUT | `/api/users` | ADMIN |
-
-## CORS e segurança
-
-O backend usa `SecurityFilterChain` stateless com JWT e CORS global. A configuração atual:
-
-- permite `http://localhost:5174`
-- aceita `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`
-- libera `Authorization`, `Content-Type` e headers usuais de preflight
-- responde corretamente a requisições `OPTIONS`
-- ignora autenticação JWT em preflight
-- funciona tanto em execução local quanto via Docker
-
-## Build e testes
-
-Frontend:
-
-```bash
-cd frontend
-npm run build
-```
-
-Backend:
-
-```bash
-cd backend
-mvn test
-```
+Projeto desenvolvido para fins de estudo, demonstração técnica e
+portfólio.
