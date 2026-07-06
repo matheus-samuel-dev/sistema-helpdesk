@@ -74,6 +74,48 @@ class TicketServiceTest {
     }
 
     @Test
+    void clientCannotCreateCriticalPriorityTicket() {
+        var actor = new AuthenticatedUser(1L, "Cliente", "c@x.com", "x", UserRole.CLIENTE, true);
+
+        assertThatThrownBy(() -> service.create(
+            new TicketDtos.CreateRequest("Erro", "Descricao detalhada", TicketPriority.CRITICA, TicketCategory.SOFTWARE, null),
+            actor
+        )).isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void adminCanCreateCriticalPriorityTicketForClient() {
+        var adminUser = user(9L, UserRole.ADMIN, "Admin");
+        when(users.findById(1L)).thenReturn(Optional.of(client));
+        when(users.findById(9L)).thenReturn(Optional.of(adminUser));
+        when(tickets.save(any())).thenAnswer(invocation -> {
+            Ticket ticket = invocation.getArgument(0);
+            ticket.setId(11L);
+            ticket.setCreatedAt(OffsetDateTime.now());
+            ticket.setUpdatedAt(ticket.getCreatedAt());
+            return ticket;
+        });
+
+        var actor = new AuthenticatedUser(9L, "Admin", "a@x.com", "x", UserRole.ADMIN, true);
+        var result = service.create(
+            new TicketDtos.CreateRequest("Incidente critico", "Servico principal indisponivel", TicketPriority.CRITICA, TicketCategory.INFRAESTRUTURA, 1L),
+            actor
+        );
+
+        assertThat(result.priority()).isEqualTo(TicketPriority.CRITICA);
+        assertThat(result.slaDueAt()).isEqualTo(result.createdAt().plusHours(4));
+    }
+
+    @Test
+    void criticalPrioritySlaIsFourHours() {
+        var ticket = ticket(TicketStatus.ABERTO);
+        ticket.setPriority(TicketPriority.CRITICA);
+
+        assertThat(TicketSla.hoursFor(TicketPriority.CRITICA)).isEqualTo(4);
+        assertThat(TicketSla.dueAt(ticket)).isEqualTo(ticket.getCreatedAt().plusHours(4));
+    }
+
+    @Test
     void clientCannotChangeStatus() {
         var ticket = ticket(TicketStatus.ABERTO);
         when(tickets.findById(10L)).thenReturn(Optional.of(ticket));
@@ -84,6 +126,46 @@ class TicketServiceTest {
         assertThatThrownBy(() -> service.update(
             10L,
             new TicketDtos.UpdateRequest(null, null, TicketStatus.CANCELADO, null, null, null),
+            actor
+        )).isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void clientCannotViewTicketFromAnotherClient() {
+        var otherClient = user(3L, UserRole.CLIENTE, "Outro Cliente");
+        var ticket = ticket(TicketStatus.ABERTO);
+        ticket.setClient(otherClient);
+        when(tickets.findById(10L)).thenReturn(Optional.of(ticket));
+
+        var actor = new AuthenticatedUser(1L, "Cliente", "c@x.com", "x", UserRole.CLIENTE, true);
+
+        assertThatThrownBy(() -> service.get(10L, actor))
+            .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void technicianCannotViewUnassignedTicket() {
+        var ticket = ticket(TicketStatus.ABERTO);
+        when(tickets.findById(10L)).thenReturn(Optional.of(ticket));
+
+        var actor = new AuthenticatedUser(2L, "Tecnico", "t@x.com", "x", UserRole.TECNICO, true);
+
+        assertThatThrownBy(() -> service.get(10L, actor))
+            .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void technicianCannotDefineCriticalPriority() {
+        var ticket = ticket(TicketStatus.ABERTO);
+        ticket.setTechnician(technician);
+        when(tickets.findById(10L)).thenReturn(Optional.of(ticket));
+        when(users.findById(2L)).thenReturn(Optional.of(technician));
+
+        var actor = new AuthenticatedUser(2L, "Tecnico", "t@x.com", "x", UserRole.TECNICO, true);
+
+        assertThatThrownBy(() -> service.update(
+            10L,
+            new TicketDtos.UpdateRequest(null, null, null, TicketPriority.CRITICA, null, null),
             actor
         )).isInstanceOf(AccessDeniedException.class);
     }

@@ -1,6 +1,6 @@
 export type Role = 'ADMIN' | 'TECNICO' | 'CLIENTE';
 export type Status = 'ABERTO' | 'EM_ANDAMENTO' | 'RESOLVIDO' | 'CANCELADO';
-export type Priority = 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
+export type Priority = 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE' | 'CRITICA';
 export type Category =
   | 'HARDWARE'
   | 'SOFTWARE'

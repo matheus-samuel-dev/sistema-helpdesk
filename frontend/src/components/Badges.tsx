@@ -20,6 +20,7 @@ const priorityStyles: Record<Priority, { bg: string; color: string }> = {
   MEDIA: { bg: '#fff4db', color: '#9a6500' },
   ALTA: { bg: '#fff0e4', color: '#d14c17' },
   URGENTE: { bg: '#fde9e9', color: '#c43838' },
+  CRITICA: { bg: '#2a1010', color: '#ffb4a8' },
 };
 
 const roleStyles: Record<Role, { bg: string; color: string }> = {

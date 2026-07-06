@@ -36,6 +36,7 @@ import AppSnackbar, { initialFeedback, type FeedbackState } from '../components/
 import { CategoryBadge, PriorityBadge, SlaBadge, StatusBadge } from '../components/Badges';
 import EmptyState from '../components/EmptyState';
 import Loading from '../components/Loading';
+import PageHeader from '../components/PageHeader';
 import TicketEditDialog from '../components/TicketEditDialog';
 import TicketStatusDialog from '../components/TicketStatusDialog';
 import type { Attachment, Comment, History, HistoryEventType, Role, Ticket, User } from '../types';
@@ -204,9 +205,15 @@ export default function TicketDetail() {
 
   return (
     <>
-      <Button startIcon={<ArrowBack />} color="inherit" onClick={() => navigate('/tickets')} sx={{ mb: 2 }}>
-        Voltar para chamados
-      </Button>
+      <PageHeader
+        title="Detalhes do chamado"
+        breadcrumb="Chamados / Detalhes do chamado"
+        actions={
+          <Button startIcon={<ArrowBack />} color="inherit" onClick={() => navigate('/tickets')}>
+            Voltar para chamados
+          </Button>
+        }
+      />
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 

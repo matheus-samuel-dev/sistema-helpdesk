@@ -20,6 +20,7 @@ const priorityColors: Record<Priority, string> = {
   MEDIA: '#2779d9',
   ALTA: '#f08a24',
   URGENTE: '#d94b4b',
+  CRITICA: '#7f1d1d',
 };
 
 export function StatusDonutChart({ values }: { values: Record<Status, number> }) {

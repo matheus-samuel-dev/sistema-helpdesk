@@ -7,12 +7,7 @@ public final class TicketSla {
     private TicketSla() {}
 
     public static long hoursFor(TicketPriority priority) {
-        return switch (priority) {
-            case BAIXA -> 72;
-            case MEDIA -> 48;
-            case ALTA -> 24;
-            case URGENTE -> 8;
-        };
+        return priority.slaHours();
     }
 
     public static OffsetDateTime dueAt(Ticket ticket) {

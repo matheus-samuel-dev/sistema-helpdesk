@@ -5,6 +5,7 @@ import com.portfolio.helpdesk.activity.ActivityService;
 import com.portfolio.helpdesk.exception.BusinessException;
 import com.portfolio.helpdesk.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PasswordResetService {
     private static final long EXPIRATION_MINUTES = 30;
 
@@ -31,6 +33,7 @@ public class PasswordResetService {
                 token.setToken(UUID.randomUUID().toString().replace("-", ""));
                 token.setExpiresAt(OffsetDateTime.now().plusMinutes(EXPIRATION_MINUTES));
                 tokens.save(token);
+                log.info("Password reset token generated userId={} expiresAt={}", user.getId(), token.getExpiresAt());
                 return new AuthController.PasswordResetResponse(
                     "Token de redefinição gerado para demonstração.",
                     token.getToken(),
@@ -57,6 +60,7 @@ public class PasswordResetService {
 
         token.getUser().setPassword(encoder.encode(request.password()));
         token.setUsedAt(OffsetDateTime.now());
+        log.info("Password reset completed userId={}", token.getUser().getId());
         activities.record(
             ActivityEventType.SENHA_REDEFINIDA,
             "Senha redefinida",

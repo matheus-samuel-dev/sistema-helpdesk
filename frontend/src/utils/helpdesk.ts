@@ -21,6 +21,7 @@ export const PRIORITY_LABELS: Record<Priority, string> = {
   MEDIA: 'Média',
   ALTA: 'Alta',
   URGENTE: 'Urgente',
+  CRITICA: 'Crítica',
 };
 
 export const CATEGORY_LABELS: Record<Category, string> = {
@@ -83,6 +84,10 @@ export const PRIORITY_OPTIONS = Object.entries(PRIORITY_LABELS).map(([value, lab
   value: value as Priority,
   label,
 }));
+
+export function priorityOptionsForRole(role?: Role) {
+  return PRIORITY_OPTIONS.filter(({ value }) => role === 'ADMIN' || value !== 'CRITICA');
+}
 
 export const ROLE_OPTIONS = Object.entries(ROLE_LABELS).map(([value, label]) => ({
   value: value as Role,

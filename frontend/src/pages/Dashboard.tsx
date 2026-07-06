@@ -56,17 +56,36 @@ type Metric = {
 function TechnicianProductivityPanel({ items }: { items: TechnicianProductivity[] }) {
   if (!items.length) {
     return (
-      <EmptyState
-        compact
-        icon={<AssignmentIndOutlined sx={{ fontSize: 34 }} />}
-        title="Sem chamados atribuídos"
-        description="A produtividade aparece quando os chamados são atribuídos a um técnico. Resolvidos e em andamento entram no cálculo automaticamente."
-      />
+      <Box
+        sx={{
+          minHeight: { xs: 260, sm: 300 },
+          display: 'flex',
+          alignItems: 'stretch',
+          '& > *': {
+            flex: 1,
+          },
+        }}
+      >
+        <EmptyState
+          compact
+          icon={<AssignmentIndOutlined sx={{ fontSize: 34 }} />}
+          title="Sem dados de produtividade"
+          description="Assim que chamados forem atribuídos ou resolvidos, os indicadores por técnico aparecerão aqui."
+        />
+      </Box>
     );
   }
 
   return (
-    <Stack spacing={1.4}>
+    <Stack
+      spacing={1.4}
+      sx={{
+        maxHeight: { lg: 520 },
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        pr: { lg: 0.5 },
+      }}
+    >
       {items.map((item, index) => (
         <Box
           key={item.technician}
@@ -84,11 +103,11 @@ function TechnicianProductivityPanel({ items }: { items: TechnicianProductivity[
             },
           }}
         >
-          <Stack direction="row" spacing={1.2} alignItems="center">
-            <Avatar sx={{ bgcolor: '#e9f2ff', color: '#1769d2', fontWeight: 800 }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} alignItems={{ xs: 'flex-start', sm: 'center' }}>
+            <Avatar sx={{ bgcolor: '#e9f2ff', color: '#1769d2', fontWeight: 800, flexShrink: 0 }}>
               {getInitials(item.technician)}
             </Avatar>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
                 <Typography fontWeight={800} noWrap>
                   {item.technician}
@@ -154,12 +173,12 @@ export default function Dashboard() {
         ? 'Meu portal de chamados'
         : 'Central de operações';
 
-  const subtitle =
+  const breadcrumb =
     user?.role === 'TECNICO'
-      ? 'Acompanhe sua fila, SLA, produtividade e chamados que precisam de ação.'
+      ? 'Dashboard / Técnico'
       : user?.role === 'CLIENTE'
-        ? 'Acompanhe seus chamados, comentários recebidos e andamento das solicitações.'
-        : 'Acompanhe SLA, produtividade, filas e movimentações da operação de atendimento.';
+        ? 'Dashboard / Meu portal'
+        : 'Dashboard / Central de operações';
 
   const metrics: Metric[] =
     user?.role === 'CLIENTE'
@@ -201,24 +220,15 @@ export default function Dashboard() {
 
   return (
     <>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: { xs: 'flex-start', sm: 'center' },
-          gap: 2,
-          flexWrap: 'wrap',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography variant="h5">{title}</Typography>
-          <Typography color="text.secondary">{subtitle}</Typography>
-        </Box>
-        <Button variant="contained" startIcon={<Add />} onClick={() => navigate('/tickets/new')}>
-          Novo chamado
-        </Button>
-      </Box>
+      <PageHeader
+        title={title}
+        breadcrumb={breadcrumb}
+        actions={
+          <Button variant="contained" startIcon={<Add />} onClick={() => navigate('/tickets/new')}>
+            Novo chamado
+          </Button>
+        }
+      />
 
       <Grid container spacing={2} mb={2}>
         {metrics.map((item, index) => (
@@ -308,8 +318,22 @@ export default function Dashboard() {
 
         <Grid size={{ xs: 12, lg: 5 }}>
           <Stack spacing={2} sx={{ height: '100%' }}>
-            <Card sx={{ flex: 1 }}>
-              <CardContent>
+            <Card
+              sx={{
+                flex: 1,
+                minHeight: { xs: 380, lg: 430 },
+                overflow: 'hidden',
+              }}
+            >
+              <CardContent
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  p: { xs: 2.25, sm: 3 },
+                  '&:last-child': { pb: { xs: 2.25, sm: 3 } },
+                }}
+              >
                 <Typography fontWeight={700} mb={2}>
                   {user?.role === 'TECNICO' ? 'Produtividade da semana' : 'Produtividade por técnico'}
                 </Typography>

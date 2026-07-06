@@ -63,26 +63,20 @@ public class DashboardService {
         repository.countVisibleGroupedByCategory(role, userId)
             .forEach(row -> category.put((TicketCategory) row[0], (Long) row[1]));
 
-        List<Ticket> visibleTickets = repository.findVisibleForDashboard(role, userId);
         ZoneId zone = ZoneId.systemDefault();
         LocalDate today = LocalDate.now(zone);
         LocalDate weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        OffsetDateTime todayStart = today.atStartOfDay(zone).toOffsetDateTime();
+        OffsetDateTime tomorrowStart = today.plusDays(1).atStartOfDay(zone).toOffsetDateTime();
+        OffsetDateTime weekStartAt = weekStart.atStartOfDay(zone).toOffsetDateTime();
+        OffsetDateTime nextWeekStartAt = weekStart.plusWeeks(1).atStartOfDay(zone).toOffsetDateTime();
 
-        long createdToday = visibleTickets.stream()
-            .filter(ticket -> ticket.getCreatedAt().atZoneSameInstant(zone).toLocalDate().isEqual(today))
-            .count();
+        long createdToday = repository.countVisibleCreatedBetween(role, userId, todayStart, tomorrowStart);
+        long createdThisWeek = repository.countVisibleCreatedBetween(role, userId, weekStartAt, nextWeekStartAt);
+        long resolvedToday = repository.countVisibleResolvedBetween(role, userId, todayStart, tomorrowStart);
+        long resolvedThisWeek = repository.countVisibleResolvedBetween(role, userId, weekStartAt, nextWeekStartAt);
 
-        long createdThisWeek = visibleTickets.stream()
-            .filter(ticket -> !ticket.getCreatedAt().atZoneSameInstant(zone).toLocalDate().isBefore(weekStart))
-            .count();
-
-        long resolvedToday = visibleTickets.stream()
-            .filter(ticket -> ticket.getResolvedAt() != null && ticket.getResolvedAt().atZoneSameInstant(zone).toLocalDate().isEqual(today))
-            .count();
-
-        long resolvedThisWeek = visibleTickets.stream()
-            .filter(ticket -> ticket.getResolvedAt() != null && !ticket.getResolvedAt().atZoneSameInstant(zone).toLocalDate().isBefore(weekStart))
-            .count();
+        List<Ticket> visibleTickets = repository.findVisibleForDashboard(role, userId);
 
         long overdueSla = visibleTickets.stream()
             .filter(ticket -> ticket.getStatus() != TicketStatus.RESOLVIDO && ticket.getStatus() != TicketStatus.CANCELADO)
@@ -110,29 +104,22 @@ public class DashboardService {
 
         LocalDate trendStart = today.minusDays(TREND_DAYS - 1L);
         List<DashboardDtos.DailyVolume> dailyVolume = trendStart.datesUntil(today.plusDays(1))
-            .map(date -> new DashboardDtos.DailyVolume(
-                date,
-                visibleTickets.stream().filter(ticket -> ticket.getCreatedAt().atZoneSameInstant(zone).toLocalDate().isEqual(date)).count(),
-                visibleTickets.stream().filter(ticket -> ticket.getResolvedAt() != null && ticket.getResolvedAt().atZoneSameInstant(zone).toLocalDate().isEqual(date)).count()
-            ))
+            .map(date -> {
+                OffsetDateTime from = date.atStartOfDay(zone).toOffsetDateTime();
+                OffsetDateTime to = date.plusDays(1).atStartOfDay(zone).toOffsetDateTime();
+                return new DashboardDtos.DailyVolume(
+                    date,
+                    repository.countVisibleCreatedBetween(role, userId, from, to),
+                    repository.countVisibleResolvedBetween(role, userId, from, to)
+                );
+            })
             .toList();
 
-        List<DashboardDtos.RankingItem> byTechnician = toRanking(
-            visibleTickets.stream()
-                .filter(ticket -> ticket.getTechnician() != null)
-                .collect(Collectors.groupingBy(ticket -> ticket.getTechnician().getName(), Collectors.counting()))
-        );
+        List<DashboardDtos.RankingItem> byTechnician = toRanking(repository.countVisibleByTechnician(role, userId));
 
-        List<DashboardDtos.RankingItem> byClient = toRanking(
-            visibleTickets.stream()
-                .collect(Collectors.groupingBy(ticket -> ticket.getClient().getName(), Collectors.counting()))
-        );
+        List<DashboardDtos.RankingItem> byClient = toRanking(repository.countVisibleByClient(role, userId));
 
-        List<DashboardDtos.RankingItem> productivityByTechnician = toRanking(
-            visibleTickets.stream()
-                .filter(ticket -> ticket.getTechnician() != null)
-                .collect(Collectors.groupingBy(ticket -> ticket.getTechnician().getName(), Collectors.counting()))
-        );
+        List<DashboardDtos.RankingItem> productivityByTechnician = byTechnician;
 
         List<DashboardDtos.TechnicianProductivity> technicianProductivity = technicianProductivity(
             visibleTickets,
@@ -141,11 +128,7 @@ public class DashboardService {
         );
 
         List<DashboardDtos.RankingItem> resolvedThisWeekByTechnician = toRanking(
-            visibleTickets.stream()
-                .filter(ticket -> ticket.getTechnician() != null)
-                .filter(ticket -> ticket.getResolvedAt() != null)
-                .filter(ticket -> !ticket.getResolvedAt().atZoneSameInstant(zone).toLocalDate().isBefore(weekStart))
-                .collect(Collectors.groupingBy(ticket -> ticket.getTechnician().getName(), Collectors.counting()))
+            repository.countVisibleResolvedByTechnicianBetween(role, userId, weekStartAt, nextWeekStartAt)
         );
         if (!resolvedThisWeekByTechnician.isEmpty()) {
             productivityByTechnician = resolvedThisWeekByTechnician;
@@ -311,10 +294,24 @@ public class DashboardService {
             .toList();
     }
 
+    private List<DashboardDtos.RankingItem> toRanking(List<Object[]> values) {
+        return values.stream()
+            .map(row -> new DashboardDtos.RankingItem((String) row[0], ((Number) row[1]).longValue()))
+            .sorted((left, right) -> {
+                int byTotal = Long.compare(right.total(), left.total());
+                if (byTotal != 0) {
+                    return byTotal;
+                }
+                return left.label().compareToIgnoreCase(right.label());
+            })
+            .limit(5)
+            .toList();
+    }
+
     private List<DashboardDtos.RankingItem> averageResolutionByCategory(List<Ticket> tickets) {
         return tickets.stream()
             .filter(ticket -> ticket.getResolvedAt() != null)
-            .collect(Collectors.groupingBy(ticket -> categoryLabel(ticket.getCategory()), Collectors.averagingLong(ticket -> ChronoUnit.MINUTES.between(ticket.getCreatedAt(), ticket.getResolvedAt()))))
+            .collect(Collectors.groupingBy(ticket -> ticket.getCategory().label(), Collectors.averagingLong(ticket -> ChronoUnit.MINUTES.between(ticket.getCreatedAt(), ticket.getResolvedAt()))))
             .entrySet()
             .stream()
             .sorted(Map.Entry.comparingByKey())
@@ -323,16 +320,4 @@ public class DashboardService {
             .toList();
     }
 
-    private String categoryLabel(TicketCategory category) {
-        return switch (category) {
-            case HARDWARE -> "Hardware";
-            case SOFTWARE -> "Software";
-            case REDE -> "Rede";
-            case IMPRESSORA -> "Impressora";
-            case ACESSO -> "Acesso";
-            case BANCO_DE_DADOS -> "Banco de Dados";
-            case INFRAESTRUTURA -> "Infraestrutura";
-            case OUTROS -> "Outros";
-        };
-    }
 }

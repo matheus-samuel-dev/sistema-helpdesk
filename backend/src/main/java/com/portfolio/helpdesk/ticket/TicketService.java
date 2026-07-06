@@ -12,6 +12,7 @@ import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TicketService {
     private final TicketRepository tickets;
     private final TicketHistoryRepository history;
@@ -36,6 +38,7 @@ public class TicketService {
 
     @Transactional
     public TicketDtos.Response create(TicketDtos.CreateRequest request, AuthenticatedUser actor) {
+        assertCanUseCriticalPriority(request.priority(), actor);
         User client = resolveClientForCreation(request, actor);
         Ticket ticket = new Ticket();
         ticket.setTitle(request.title().trim());
@@ -45,12 +48,20 @@ public class TicketService {
         ticket.setCategory(request.category());
         ticket.setStatus(TicketStatus.ABERTO);
         tickets.save(ticket);
+        log.info(
+            "Ticket created id={} actorId={} actorRole={} priority={} category={}",
+            ticket.getId(),
+            actor.id(),
+            actor.role(),
+            ticket.getPriority(),
+            ticket.getCategory()
+        );
 
         record(
             ticket,
             user(actor.id()),
             HistoryEventType.CRIACAO,
-            "Chamado criado com prioridade " + priorityLabel(request.priority()) + " na categoria " + categoryLabel(request.category()) + "."
+            "Chamado criado com prioridade " + request.priority().label() + " na categoria " + request.category().label() + "."
         );
         return TicketDtos.response(ticket);
     }
@@ -212,7 +223,7 @@ public class TicketService {
                 ticket,
                 actorUser,
                 HistoryEventType.ALTERACAO_CATEGORIA,
-                "Categoria alterada de " + categoryLabel(previous) + " para " + categoryLabel(request.category()) + "."
+                "Categoria alterada de " + previous.label() + " para " + request.category().label() + "."
             );
         }
 
@@ -251,14 +262,22 @@ public class TicketService {
         if (actor.role() != UserRole.ADMIN) {
             throw new AccessDeniedException("Somente administradores podem alterar a prioridade.");
         }
+        assertCanUseCriticalPriority(request.priority(), actor);
 
         TicketPriority previous = ticket.getPriority();
         ticket.setPriority(request.priority());
+        log.info(
+            "Ticket priority changed id={} actorId={} from={} to={}",
+            ticket.getId(),
+            actor.id(),
+            previous,
+            request.priority()
+        );
         record(
             ticket,
             actorUser,
             HistoryEventType.ALTERACAO_PRIORIDADE,
-            "Prioridade alterada de " + priorityLabel(previous) + " para " + priorityLabel(request.priority()) + "."
+            "Prioridade alterada de " + previous.label() + " para " + request.priority().label() + "."
         );
     }
 
@@ -279,6 +298,7 @@ public class TicketService {
         } else {
             ticket.setResolvedAt(null);
         }
+        log.info("Ticket status changed id={} actorId={} from={} to={}", ticket.getId(), actor.id(), current, target);
 
         HistoryEventType eventType = current == TicketStatus.RESOLVIDO && target == TicketStatus.EM_ANDAMENTO
             ? HistoryEventType.REABERTURA
@@ -326,7 +346,8 @@ public class TicketService {
                 .when(TicketPriority.MEDIA, 1)
                 .when(TicketPriority.ALTA, 2)
                 .when(TicketPriority.URGENTE, 3)
-                .otherwise(4);
+                .when(TicketPriority.CRITICA, 4)
+                .otherwise(5);
             case "status" -> cb.selectCase(root.get("status"))
                 .when(TicketStatus.ABERTO, 0)
                 .when(TicketStatus.EM_ANDAMENTO, 1)
@@ -334,11 +355,12 @@ public class TicketService {
                 .when(TicketStatus.CANCELADO, 3)
                 .otherwise(4);
             case "sla" -> cb.selectCase(root.get("priority"))
-                .when(TicketPriority.URGENTE, 0)
-                .when(TicketPriority.ALTA, 1)
-                .when(TicketPriority.MEDIA, 2)
-                .when(TicketPriority.BAIXA, 3)
-                .otherwise(4);
+                .when(TicketPriority.CRITICA, 0)
+                .when(TicketPriority.URGENTE, 1)
+                .when(TicketPriority.ALTA, 2)
+                .when(TicketPriority.MEDIA, 3)
+                .when(TicketPriority.BAIXA, 4)
+                .otherwise(5);
             case "createdAt", "date" -> root.get("createdAt");
             default -> root.get("updatedAt");
         };
@@ -377,6 +399,12 @@ public class TicketService {
 
     private User user(Long id) {
         return users.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+    }
+
+    private void assertCanUseCriticalPriority(TicketPriority priority, AuthenticatedUser actor) {
+        if (priority == TicketPriority.CRITICA && actor.role() != UserRole.ADMIN) {
+            throw new AccessDeniedException("Somente administradores podem definir prioridade crítica.");
+        }
     }
 
     private ActivityEventType activityType(HistoryEventType type) {
@@ -422,25 +450,4 @@ public class TicketService {
         };
     }
 
-    private String priorityLabel(TicketPriority priority) {
-        return switch (priority) {
-            case BAIXA -> "Baixa";
-            case MEDIA -> "Média";
-            case ALTA -> "Alta";
-            case URGENTE -> "Urgente";
-        };
-    }
-
-    private String categoryLabel(TicketCategory category) {
-        return switch (category) {
-            case HARDWARE -> "Hardware";
-            case SOFTWARE -> "Software";
-            case REDE -> "Rede";
-            case IMPRESSORA -> "Impressora";
-            case ACESSO -> "Acesso";
-            case BANCO_DE_DADOS -> "Banco de Dados";
-            case INFRAESTRUTURA -> "Infraestrutura";
-            case OUTROS -> "Outros";
-        };
-    }
 }

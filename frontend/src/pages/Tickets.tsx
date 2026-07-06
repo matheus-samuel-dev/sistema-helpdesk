@@ -38,6 +38,7 @@ import AppSnackbar, { initialFeedback } from '../components/AppSnackbar';
 import { CategoryBadge, PriorityBadge, SlaBadge, StatusBadge } from '../components/Badges';
 import EmptyState from '../components/EmptyState';
 import Loading from '../components/Loading';
+import PageHeader from '../components/PageHeader';
 import TicketStatusDialog from '../components/TicketStatusDialog';
 import type { FeedbackState } from '../components/AppSnackbar';
 import type { Category, Page, Priority, Role, Status, Ticket, User } from '../types';
@@ -217,26 +218,15 @@ export default function Tickets() {
 
   return (
     <>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: { xs: 'flex-start', sm: 'center' },
-          gap: 2,
-          flexWrap: 'wrap',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography variant="h5">Chamados</Typography>
-          <Typography color="text.secondary">
-            Gerencie filas, acompanhe prioridades e execute ações rápidas sem perder contexto.
-          </Typography>
-        </Box>
-        <Button variant="contained" startIcon={<Add />} onClick={() => navigate('/tickets/new')}>
-          Novo chamado
-        </Button>
-      </Box>
+      <PageHeader
+        title="Chamados"
+        breadcrumb="Atendimento / Chamados"
+        actions={
+          <Button variant="contained" startIcon={<Add />} onClick={() => navigate('/tickets/new')}>
+            Novo chamado
+          </Button>
+        }
+      />
 
       <Card sx={{ mb: 2 }}>
         <CardContent>

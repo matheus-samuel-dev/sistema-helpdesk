@@ -85,11 +85,11 @@ public class GlobalSearchService {
             : List.<SearchDtos.Result>of();
 
         var categoryResults = Arrays.stream(TicketCategory.values())
-            .filter(category -> category.name().toLowerCase().contains(text.toLowerCase()) || categoryLabel(category).toLowerCase().contains(text.toLowerCase()))
+            .filter(category -> category.name().toLowerCase().contains(text.toLowerCase()) || category.label().toLowerCase().contains(text.toLowerCase()))
             .limit(5)
             .map(category -> new SearchDtos.Result(
                 "category",
-                categoryLabel(category),
+                category.label(),
                 "Categoria de chamados",
                 "/tickets?category=" + category.name()
             ))
@@ -132,19 +132,6 @@ public class GlobalSearchService {
 
     private String ticketDescription(Ticket ticket) {
         String owner = ticket.getTechnician() == null ? "Sem responsável" : ticket.getTechnician().getName();
-        return categoryLabel(ticket.getCategory()) + " · " + ticket.getStatus() + " · " + owner;
-    }
-
-    private String categoryLabel(TicketCategory category) {
-        return switch (category) {
-            case HARDWARE -> "Hardware";
-            case SOFTWARE -> "Software";
-            case REDE -> "Rede";
-            case IMPRESSORA -> "Impressora";
-            case ACESSO -> "Acesso";
-            case BANCO_DE_DADOS -> "Banco de Dados";
-            case INFRAESTRUTURA -> "Infraestrutura";
-            case OUTROS -> "Outros";
-        };
+        return ticket.getCategory().label() + " · " + ticket.getStatus() + " · " + owner;
     }
 }

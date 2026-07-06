@@ -175,13 +175,50 @@ export default function Layout() {
             <GlobalSearch />
           </Box>
 
-          <Tooltip title="Perfil do usuário">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.4 }}>
-              <Avatar sx={{ width: 38, height: 38, bgcolor: '#dbe8f8', color: '#1769d2', fontWeight: 800 }}>
+          <Tooltip title={user ? `${user.name} · ${user.role}` : 'Perfil do usuário'}>
+            <Box
+              component="button"
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              aria-label={user ? `Perfil de ${user.name}` : 'Perfil do usuário'}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: { xs: 'center', sm: 'flex-start' },
+                gap: { xs: 0, sm: 1.2 },
+                minWidth: { xs: 42, sm: 0 },
+                maxWidth: { xs: 42, sm: 260 },
+                height: 46,
+                px: { xs: 0, sm: 0.8 },
+                py: 0.4,
+                border: '1px solid',
+                borderColor: 'rgba(148, 163, 184, 0.28)',
+                borderRadius: 999,
+                bgcolor: 'rgba(248, 250, 252, 0.78)',
+                color: 'inherit',
+                cursor: 'pointer',
+                transition: 'background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease',
+                '&:hover': {
+                  bgcolor: 'white',
+                  borderColor: 'rgba(23, 105, 210, 0.28)',
+                  boxShadow: '0 12px 28px rgba(20, 34, 60, 0.08)',
+                  transform: 'translateY(-1px)',
+                },
+                '&:focus-visible': {
+                  outline: '3px solid rgba(23, 105, 210, 0.22)',
+                  outlineOffset: 2,
+                },
+                '& .MuiChip-root': {
+                  height: 22,
+                  fontSize: 11,
+                },
+              }}
+            >
+              <Avatar sx={{ width: 36, height: 36, bgcolor: '#dbe8f8', color: '#1769d2', fontWeight: 800, fontSize: 14 }}>
                 {getInitials(user?.name)}
               </Avatar>
-              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-                <Typography fontWeight={700} fontSize={13}>
+              <Box sx={{ display: { xs: 'none', sm: 'block' }, minWidth: 0, textAlign: 'left' }}>
+                <Typography fontWeight={800} fontSize={13} noWrap sx={{ lineHeight: 1.1 }}>
                   {user?.name}
                 </Typography>
                 {user?.role && <RoleBadge value={user.role} />}

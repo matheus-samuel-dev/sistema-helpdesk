@@ -3,9 +3,37 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "scripts": {"dev":"vite","build":"tsc -b && vite build","lint":"eslint .","preview":"vite preview"},
-  "dependencies": {
-    "@emotion/react":"^11.14.0","@emotion/styled":"^11.14.0","@hookform/resolvers":"^5.0.1","@mui/icons-material":"^7.1.1","@mui/material":"^7.1.1","axios":"^1.9.0","react":"^19.1.0","react-dom":"^19.1.0","react-hook-form":"^7.57.0","react-router-dom":"^7.6.2","zod":"^3.25.56"
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
-  "devDependencies": {"@types/react":"^19.1.6","@types/react-dom":"^19.1.5","@vitejs/plugin-react":"^4.5.1","typescript":"~5.8.3","vite":"^6.3.5"}
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@hookform/resolvers": "^5.0.1",
+    "@mui/icons-material": "^7.1.1",
+    "@mui/material": "^7.1.1",
+    "axios": "^1.9.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.57.0",
+    "react-router-dom": "^7.6.2",
+    "zod": "^3.25.56"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^4.5.1",
+    "jsdom": "^29.1.1",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^4.1.9"
+  }
 }

@@ -37,6 +37,7 @@ import AppSnackbar, { initialFeedback, type FeedbackState } from '../components/
 import { AccessBadge, RoleBadge } from '../components/Badges';
 import EmptyState from '../components/EmptyState';
 import Loading from '../components/Loading';
+import PageHeader from '../components/PageHeader';
 import type { Page, Role, User } from '../types';
 import { ROLE_OPTIONS } from '../utils/helpdesk';
 
@@ -159,34 +160,23 @@ export default function Users() {
 
   return (
     <>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: { xs: 'flex-start', sm: 'center' },
-          gap: 2,
-          flexWrap: 'wrap',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography variant="h5">Painel de gestão</Typography>
-          <Typography color="text.secondary">
-            Gerencie acessos, perfis, busca e disponibilidade dos usuários com uma experiência mais clara.
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => {
-            setForm(initialForm);
-            setEditing(undefined);
-            setOpen(true);
-          }}
-        >
-          Novo acesso
-        </Button>
-      </Box>
+      <PageHeader
+        title="Painel de gestão"
+        breadcrumb="Administração / Painel de gestão"
+        actions={
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => {
+              setForm(initialForm);
+              setEditing(undefined);
+              setOpen(true);
+            }}
+          >
+            Novo acesso
+          </Button>
+        }
+      />
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 

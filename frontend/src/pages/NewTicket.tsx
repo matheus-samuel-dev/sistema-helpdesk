@@ -20,13 +20,14 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { api, errorMessage } from '../api';
 import { useAuth } from '../auth';
+import PageHeader from '../components/PageHeader';
 import type { Category, Priority, User } from '../types';
-import { CATEGORY_OPTIONS, PRIORITY_LABELS } from '../utils/helpdesk';
+import { CATEGORY_OPTIONS, priorityOptionsForRole } from '../utils/helpdesk';
 
 const schema = z.object({
   title: z.string().min(3, 'Mínimo de 3 caracteres.').max(160),
   description: z.string().min(10, 'Descreva o problema com mais detalhes.').max(5000),
-  priority: z.enum(['BAIXA', 'MEDIA', 'ALTA', 'URGENTE']),
+  priority: z.enum(['BAIXA', 'MEDIA', 'ALTA', 'URGENTE', 'CRITICA']),
   category: z.enum([
     'HARDWARE',
     'SOFTWARE',
@@ -63,6 +64,8 @@ export default function NewTicket() {
     },
   });
 
+  const priorityOptions = priorityOptionsForRole(user?.role);
+
   useEffect(() => {
     if (user?.role === 'ADMIN') {
       api
@@ -74,12 +77,7 @@ export default function NewTicket() {
 
   return (
     <Box sx={{ maxWidth: 980, mx: 'auto' }}>
-      <Typography variant="h5" mb={0.5}>
-        Novo chamado
-      </Typography>
-      <Typography color="text.secondary" mb={3}>
-        Registre a demanda com contexto suficiente para agilizar o atendimento e facilitar a triagem da equipe.
-      </Typography>
+      <PageHeader title="Novo chamado" breadcrumb="Atendimento / Novo chamado" />
 
       <Card>
         <CardContent sx={{ p: { xs: 2.2, sm: 4 } }}>
@@ -134,9 +132,9 @@ export default function NewTicket() {
                     control={control}
                     render={({ field }) => (
                       <Select {...field} label="Prioridade">
-                        {Object.entries(PRIORITY_LABELS).map(([value, label]) => (
-                          <MenuItem key={value} value={value}>
-                            {label}
+                        {priorityOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
                           </MenuItem>
                         ))}
                       </Select>

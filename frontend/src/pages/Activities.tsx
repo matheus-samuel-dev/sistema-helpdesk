@@ -24,6 +24,7 @@ import { api, errorMessage } from '../api';
 import { RoleBadge } from '../components/Badges';
 import EmptyState from '../components/EmptyState';
 import Loading from '../components/Loading';
+import PageHeader from '../components/PageHeader';
 import type { Activity, ActivityEventType, Page, Role } from '../types';
 import { ACTIVITY_LABELS, ROLE_OPTIONS, formatDateTime, getInitials } from '../utils/helpdesk';
 
@@ -111,12 +112,7 @@ export default function Activities() {
 
   return (
     <>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5">Central de Atividades</Typography>
-        <Typography color="text.secondary">
-          Acompanhe os eventos importantes do atendimento com filtros, histórico e rastreabilidade por perfil.
-        </Typography>
-      </Box>
+      <PageHeader title="Central de atividades" breadcrumb="Operação / Central de atividades" />
 
       <Card sx={{ mb: 2 }}>
         <CardContent>

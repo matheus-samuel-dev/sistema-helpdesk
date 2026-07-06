@@ -70,7 +70,7 @@ public class SecurityConfig {
                             OffsetDateTime.now(),
                             401,
                             "Unauthorized",
-                            "Autenticacao necessaria",
+                            "Autenticação necessária",
                             req.getRequestURI(),
                             null
                         )
@@ -85,7 +85,7 @@ public class SecurityConfig {
                             OffsetDateTime.now(),
                             403,
                             "Forbidden",
-                            "Acesso negado",
+                            "Acesso negado.",
                             req.getRequestURI(),
                             null
                         )
