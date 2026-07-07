@@ -1,313 +1,107 @@
-# HelpDesk SaaS
+# 🎧 Sistema HelpDesk
 
-Sistema full stack de gerenciamento de chamados inspirado em operações reais de suporte corporativo. O projeto usa Spring Boot Java 21, React TypeScript, PostgreSQL, Flyway, RBAC, JWT, SLA, anexos, recuperação de senha, busca global, dashboard operacional e seed demo para portfólio.
+Sistema Full Stack de gerenciamento de chamados desenvolvido para simular uma plataforma profissional de suporte técnico, permitindo abertura, acompanhamento e gerenciamento de tickets por diferentes perfis de usuário.
 
-## Stack
+## 🚀 Tecnologias
 
-- Backend: Java 21, Spring Boot 3, Spring Security, Spring Data JPA, Bean Validation, Flyway e PostgreSQL.
-- Frontend: React 19, TypeScript, Vite, Material UI, React Router, Axios, React Hook Form, Zod, Vitest e Testing Library.
-- Infraestrutura: Docker, Docker Compose, Nginx e GitHub Actions.
+### Front-end
+- React
+- TypeScript
+- Material UI
 
-## Perfis
+### Back-end
+- Java
+- Spring Boot
+- Spring Security
+- JWT
 
-- `ADMIN`: acessa tudo, gerencia usuários, atribui técnicos, altera prioridades e acompanha indicadores globais.
-- `TECNICO`: atende apenas chamados atribuídos, comenta, anexa arquivos e altera status permitidos.
-- `CLIENTE`: cria chamados, acompanha seus próprios chamados e comenta publicamente.
+### Banco de Dados
+- PostgreSQL
 
-## Login e API
+### DevOps
+- Docker
+- Docker Compose
+- Nginx
 
-Endpoint de login:
+---
 
-```text
-POST /api/auth/login
-```
+## ✨ Funcionalidades
 
-No frontend, o endpoint final é formado por:
+* ✅ Autenticação com JWT
+* ✅ Controle de acesso por perfis (Admin, Técnico e Cliente)
+* ✅ Dashboard com indicadores
+* ✅ Gestão completa de chamados
+* ✅ Histórico e comentários dos tickets
+* ✅ Gerenciamento de usuários
+* ✅ API REST documentada com Swagger
+* ✅ Banco versionado com Flyway
+* ✅ Containerização com Docker
 
-```text
-VITE_API_URL + /auth/login
-```
+---
 
-Exemplo local:
+## 📸 Screenshots
 
-```text
-http://localhost:8081/api/auth/login
-```
+<table>
+  <tr>
+    <td align="center">
+      <strong>🔐 Login</strong><br><br>
+      <img src="./screenshots/login.png" width="100%" alt="Tela de Login"/>
+    </td>
+  </tr>
 
-O cliente Axios usa timeout configurável por `VITE_API_TIMEOUT_MS`. Em desenvolvimento, o fallback da API é `http://localhost:8081/api`. Em produção, se `VITE_API_URL` não for informado, o fallback passa a ser `${window.location.origin}/api`, evitando chamadas erradas para `localhost` na máquina do usuário.
+  <tr>
+    <td align="center">
+      <strong>📊 Dashboard</strong><br><br>
+      <img src="./screenshots/dashboard.png" width="100%" alt="Dashboard"/>
+    </td>
+  </tr>
 
-### Modo demo/offline para portfólio
+  <tr>
+    <td align="center">
+      <strong>🎫 Gestão de Chamados</strong><br><br>
+      <img src="./screenshots/chamados.png" width="100%" alt="Gestão de Chamados"/>
+    </td>
+  </tr>
+</table>
 
-Para evitar que o cold start do Render prejudique a primeira impressão, o frontend possui um modo demo local para as credenciais:
+---
 
-```text
-admin@helpdesk.com
-Admin@123
-```
-
-Ao usar essas credenciais, o login é feito imediatamente no navegador, sem bloquear a tela aguardando o backend. O token gerado é um token local de demonstração (`helpdesk-demo-local.*`), não é aceito pelo backend e serve apenas para ativar a camada demo do frontend.
-
-No modo demo, as telas usam dados persistidos em `localStorage`:
-
-- Central de operações;
-- Central de atividades;
-- Chamados;
-- Detalhes do chamado;
-- Novo chamado;
-- Comentários;
-- Timeline;
-- Anexos simulados;
-- Pesquisa global;
-- Filtros;
-- Alteração de status;
-- Atribuição de técnico;
-- Painel de gestão.
-
-As ações principais são simuladas localmente: criar chamado, editar chamado, alterar status, comentar, anexar evidência, criar/editar usuários e atualizar dashboard/timeline/atividades. O refresh mantém a sessão demo e as alterações locais. O logout limpa somente a sessão; os dados demo permanecem para a próxima demonstração.
-
-Logins reais continuam usando `POST /api/auth/login`. Qualquer credencial diferente da demo depende da API configurada em `VITE_API_URL`.
-
-Mensagens amigáveis de login:
-
-- `E-mail ou senha inválidos.`
-- `Não foi possível conectar ao servidor. Tente novamente em alguns instantes.`
-- `Servidor indisponível no momento.`
-
-Erros técnicos são enviados apenas ao console para debug.
-
-## Regras de Chamado
-
-### Status
-
-```text
-Aberto -> Em andamento -> Resolvido
-Aberto -> Cancelado
-Em andamento -> Cancelado
-Resolvido -> Em andamento
-Cancelado -> sem transições
-```
-
-Regras:
-
-- Todo chamado nasce como `ABERTO`.
-- Não é permitido voltar manualmente para `ABERTO`.
-- Chamados resolvidos podem ser reabertos para `EM_ANDAMENTO`.
-- Chamados cancelados não podem ser reabertos.
-- Cliente não altera status.
-- Técnico só altera chamados atribuídos a ele.
-
-### SLA por Prioridade
-
-| Prioridade | SLA |
-|---|---:|
-| Baixa | 72 horas |
-| Média | 48 horas |
-| Alta | 24 horas |
-| Urgente | 8 horas |
-| Crítica | 4 horas |
-
-A prioridade `CRITICA` é permitida apenas para `ADMIN`.
-
-### Categorias
-
-- Hardware
-- Software
-- Rede
-- Impressora
-- Acesso
-- Banco de Dados
-- Infraestrutura
-- Outros
-
-## Dashboard
-
-O dashboard usa consultas agregadas no banco para contagens por status, prioridade, categoria, técnico, cliente e evolução diária sempre que possível. Métricas que dependem de cálculo de SLA/tempo ainda usam regras de domínio no service.
-
-Indicadores principais:
-
-- chamados criados hoje;
-- resolvidos hoje;
-- vencidos pelo SLA;
-- próximos do SLA;
-- dentro do SLA;
-- tempo médio de resolução;
-- produtividade por técnico;
-- chamados por categoria;
-- últimos comentários;
-- últimas alterações.
-
-## Seed Demo
-
-Os dados demo ficam separados em:
-
-```text
-backend/src/main/resources/db/demo
-```
-
-Por padrão, produção usa apenas:
-
-```text
-classpath:db/migration
-```
-
-Para ambiente demo/desenvolvimento com dados preenchidos, use:
-
-```text
-FLYWAY_LOCATIONS=classpath:db/migration,classpath:db/demo
-```
-
-O `docker-compose.yml` já ativa essa configuração para o ambiente local de demonstração.
-
-A seed demo cria:
-
-- 1 administrador;
-- 3 técnicos;
-- 5 solicitantes;
-- 24 chamados realistas;
-- todos os status;
-- prioridades variadas;
-- categorias variadas;
-- chamados com e sem técnico;
-- comentários;
-- histórico/timeline;
-- eventos para a Central de Atividades;
-- dados para dashboard, produtividade, gráficos, busca global e últimos comentários.
-
-Os registros demo usam prefixo `[Demo]` e a seed limpa/recria apenas esses registros para evitar duplicação.
-
-## Credenciais Demo
-
-Senha padrão:
-
-```text
-Admin@123
-```
-
-| Perfil | E-mail |
-|---|---|
-| ADMIN | `admin@helpdesk.com` |
-| TECNICO | `tecnico@helpdesk.com` |
-| TECNICO | `ana.suporte@helpdesk.com` |
-| TECNICO | `bruno.infra@helpdesk.com` |
-| CLIENTE | `cliente@helpdesk.com` |
-| CLIENTE | `carlos.operacoes@helpdesk.com` |
-| CLIENTE | `fernanda.financeiro@helpdesk.com` |
-| CLIENTE | `rafael.logistica@helpdesk.com` |
-| CLIENTE | `patricia.rh@helpdesk.com` |
-
-## Execução Local
-
-Pré-requisitos:
-
-- Java 21
-- Maven 3.9+
-- Node 22+
-- Docker Desktop ou Docker Engine
-
-Subir com Docker:
+## ⚙️ Executando o projeto
 
 ```bash
+git clone https://github.com/matheus-samuel-dev/sistema-helpdesk.git
+
+cd sistema-helpdesk
+
 docker compose up --build
 ```
 
-Subir apenas PostgreSQL:
+A aplicação ficará disponível em:
 
-```bash
-docker compose up postgres -d
-```
+* **Front-end:** `http://localhost:5174`
+* **API:** `http://localhost:8080`
+* **Swagger:** `http://localhost:8080/swagger-ui.html`
 
-Backend local:
+---
 
-```bash
-cd backend
-mvn spring-boot:run
-```
+## 📚 O que este projeto demonstra
 
-Frontend local:
+* Arquitetura Full Stack
+* APIs REST
+* Autenticação JWT
+* Controle de permissões
+* Integração React + Spring Boot
+* PostgreSQL
+* Docker
+* Flyway
+* Boas práticas de organização de código
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+---
 
-Endereços:
+## 👨‍💻 Autor
 
-- Frontend: `http://localhost:5174`
-- API: `http://localhost:8081/api`
-- Swagger UI: `http://localhost:8081/swagger-ui.html`
-- Health check: `http://localhost:8081/actuator/health`
+**Matheus Samuel**
 
-## Variáveis de Ambiente
-
-Backend:
-
-- `SERVER_PORT`
-- `DB_URL`
-- `DB_USERNAME`
-- `DB_PASSWORD`
-- `JWT_SECRET`
-- `JWT_EXPIRATION_MS`
-- `CORS_ALLOWED_ORIGIN`
-- `FLYWAY_LOCATIONS`
-
-Frontend:
-
-- `VITE_API_URL`
-- `VITE_API_TIMEOUT_MS`
-
-Exemplo:
-
-```bash
-CORS_ALLOWED_ORIGIN=http://localhost:5174,http://127.0.0.1:5174
-VITE_API_URL=http://localhost:8081/api
-VITE_API_TIMEOUT_MS=10000
-```
-
-## Testes
-
-Backend:
-
-```bash
-cd backend
-mvn test
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm run test
-npm run build
-```
-
-Coberturas atuais:
-
-- login e mensagens amigáveis;
-- storage de autenticação;
-- interceptor Axios e Bearer token;
-- autorização e IDOR;
-- máquina de estados;
-- SLA e prioridade crítica;
-- anexos;
-- busca global;
-- redefinição de senha.
-
-## CI/CD
-
-O workflow `.github/workflows/ci.yml` executa:
-
-- `mvn test` no backend;
-- `npm ci`, `npm run test` e `npm run build` no frontend.
-
-## Segurança
-
-- API stateless com JWT.
-- RBAC por perfil.
-- Proteção contra IDOR.
-- Senhas com BCrypt.
-- CORS configurável.
-- Erros padronizados em JSON.
-- Recuperação de senha com token e expiração.
-
-Observação: para produção real, recomenda-se migrar JWT de `localStorage/sessionStorage` para cookie `httpOnly`, `Secure` e `SameSite`.
+* 💼 LinkedIn: https://linkedin.com/in/matheus-samuel-dev
+* 💻 GitHub: https://github.com/matheus-samuel-dev
+* 🌐 Portfólio: https://matheus-samuel-dev.github.io/Portfolio/
