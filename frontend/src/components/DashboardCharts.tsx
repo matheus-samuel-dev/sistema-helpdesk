@@ -171,8 +171,8 @@ export function DailyVolumeChart({ values }: { values: DailyVolume[] }) {
     return (
       <Box
         sx={{
-          height: { xs: 230, sm: 250, md: 270, lg: 292 },
-          maxHeight: { xs: 260, md: 290, lg: 320 },
+          height: { xs: 224, sm: 238, md: 252, lg: 268 },
+          maxHeight: { xs: 250, md: 280, lg: 304 },
           display: 'flex',
           alignItems: 'stretch',
           '& > *': { flex: 1 },
@@ -190,11 +190,11 @@ export function DailyVolumeChart({ values }: { values: DailyVolume[] }) {
   return (
     <Box
       sx={{
-        height: { xs: 230, sm: 250, md: 270, lg: 292 },
-        maxHeight: { xs: 260, md: 290, lg: 320 },
+        height: { xs: 224, sm: 238, md: 252, lg: 268 },
+        maxHeight: { xs: 250, md: 280, lg: 304 },
         display: 'flex',
         flexDirection: 'column',
-        pt: 1.1,
+        pt: 0.6,
       }}
     >
       <Stack
@@ -202,7 +202,7 @@ export function DailyVolumeChart({ values }: { values: DailyVolume[] }) {
         spacing={1.5}
         alignItems="center"
         justifyContent="flex-end"
-        mb={1}
+        mb={0.7}
         sx={{ minHeight: 24 }}
       >
         {[
@@ -302,7 +302,15 @@ export function DailyVolumeChart({ values }: { values: DailyVolume[] }) {
                 }}
               >
                 <Tooltip
-                  title={`${formatLocalCalendarDate(item.date, { weekday: 'short', day: '2-digit', month: '2-digit' })} • Criados: ${item.created} • Resolvidos: ${item.resolved}`}
+                  title={
+                    <Box sx={{ py: 0.4 }}>
+                      <Typography fontWeight={800} fontSize={12.5}>
+                        {formatLocalCalendarDate(item.date, { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                      </Typography>
+                      <Typography fontSize={12}>Criados: {item.created}</Typography>
+                      <Typography fontSize={12}>Resolvidos: {item.resolved}</Typography>
+                    </Box>
+                  }
                   arrow
                 >
                   <Stack
@@ -392,11 +400,17 @@ export function DailyVolumeChart({ values }: { values: DailyVolume[] }) {
 export function RankingBars({
   items,
   label,
+  maxItems,
 }: {
   items: RankingItem[];
   label: string;
+  maxItems?: number;
 }) {
-  const visibleItems = items.filter((item) => item.total > 0);
+  const rankedItems = [...items]
+    .filter((item) => item.total > 0)
+    .sort((a, b) => b.total - a.total || a.label.localeCompare(b.label));
+  const visibleItems = maxItems ? rankedItems.slice(0, maxItems) : rankedItems;
+  const hiddenCount = Math.max(rankedItems.length - visibleItems.length, 0);
 
   if (!visibleItems.length) {
     return (
@@ -411,7 +425,7 @@ export function RankingBars({
   const max = Math.max(...visibleItems.map((item) => item.total), 1);
 
   return (
-    <Stack spacing={1.6}>
+    <Stack spacing={1.35}>
       {visibleItems.map((item, index) => (
         <Tooltip key={item.label} title={`${item.total} chamado(s)`} arrow>
           <Box>
@@ -424,7 +438,7 @@ export function RankingBars({
             <Box
               sx={{
                 width: '100%',
-                height: 10,
+                height: 9,
                 borderRadius: 999,
                 bgcolor: 'rgba(23, 32, 51, 0.08)',
                 overflow: 'hidden',
@@ -443,6 +457,11 @@ export function RankingBars({
           </Box>
         </Tooltip>
       ))}
+      {hiddenCount > 0 && (
+        <Typography color="text.secondary" fontSize={12}>
+          +{hiddenCount} {hiddenCount === 1 ? label.toLowerCase() : `${label.toLowerCase()}s`} com volume menor.
+        </Typography>
+      )}
     </Stack>
   );
 }

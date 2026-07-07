@@ -39,6 +39,10 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const userMenuOpen = Boolean(userMenuAnchor);
+  const displayName = user?.name.replace(/\s*HelpDesk\s*/gi, ' ').replace(/\s+/g, ' ').trim() || user?.name;
+  const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'Perfil do usuário';
+  const shortRoleLabel =
+    user?.role === 'ADMIN' ? 'Admin' : user?.role === 'TECNICO' ? 'Técnico' : user?.role === 'CLIENTE' ? 'Solicitante' : roleLabel;
 
   const items: Array<{ to: string; label: string; icon: ReactNode }> = [
     { to: '/dashboard', label: 'Central de operações', icon: <DashboardOutlined /> },
@@ -178,34 +182,35 @@ export default function Layout() {
             <GlobalSearch />
           </Box>
 
-          <Tooltip title={user ? `${user.name} · ${ROLE_LABELS[user.role]}` : 'Perfil do usuário'}>
+          <Tooltip title={user ? `${displayName} · ${roleLabel}` : 'Perfil do usuário'}>
             <Box
               component="button"
               type="button"
               onClick={(event) => setUserMenuAnchor(event.currentTarget)}
-              aria-label={user ? `Abrir menu de ${user.name}` : 'Abrir menu do usuário'}
+              aria-label={user ? `Abrir menu de ${displayName}` : 'Abrir menu do usuário'}
               aria-haspopup="menu"
               aria-expanded={userMenuOpen ? 'true' : undefined}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'flex-start',
-                gap: { xs: 0, sm: 1 },
-                minWidth: { xs: 38, sm: 170 },
-                maxWidth: { xs: 38, sm: 220 },
-                height: 44,
-                px: { xs: 0, sm: 0.8 },
-                py: 0.35,
+                gap: { xs: 0, sm: 0.9 },
+                minWidth: { xs: 36, sm: 154 },
+                maxWidth: { xs: 36, sm: 208 },
+                height: 42,
+                px: { xs: 0, sm: 0.55 },
+                py: 0.2,
                 border: '1px solid transparent',
-                borderRadius: 2,
+                borderRadius: 1.8,
                 bgcolor: 'transparent',
                 color: 'inherit',
                 cursor: 'pointer',
                 font: 'inherit',
-                transition: 'background-color .18s ease, border-color .18s ease',
+                transition: 'background-color .18s ease, border-color .18s ease, box-shadow .18s ease',
                 '&:hover': {
-                  bgcolor: 'rgba(15, 23, 42, 0.045)',
+                  bgcolor: 'rgba(15, 23, 42, 0.035)',
                   borderColor: 'rgba(148, 163, 184, 0.18)',
+                  boxShadow: '0 8px 18px rgba(15, 23, 42, 0.05)',
                 },
                 '&:focus-visible': {
                   outline: '3px solid rgba(23, 105, 210, 0.22)',
@@ -215,30 +220,39 @@ export default function Layout() {
             >
               <Avatar
                 sx={{
-                  width: { xs: 36, sm: 38 },
-                  height: { xs: 36, sm: 38 },
-                  bgcolor: '#e8eef6',
-                  color: '#0f2746',
+                  width: { xs: 34, sm: 36 },
+                  height: { xs: 34, sm: 36 },
+                  bgcolor: '#edf3fb',
+                  color: '#17324f',
                   fontWeight: 800,
-                  fontSize: 13,
+                  fontSize: 12.5,
                   border: '1px solid rgba(15, 39, 70, 0.08)',
                 }}
               >
                 {getInitials(user?.name)}
               </Avatar>
-              <Box sx={{ display: { xs: 'none', sm: 'block' }, minWidth: 0, textAlign: 'left', flex: 1 }}>
-                <Typography fontWeight={650} fontSize={13.5} noWrap sx={{ lineHeight: 1.15, color: '#172033' }}>
-                  {user?.name}
+              <Box sx={{ display: { xs: 'none', sm: 'flex' }, minWidth: 0, textAlign: 'left', flex: 1, flexDirection: 'column', gap: 0.25 }}>
+                <Typography fontWeight={700} fontSize={13.2} noWrap sx={{ lineHeight: 1.12, color: '#172033' }}>
+                  {displayName}
                 </Typography>
                 {user?.role && (
-                  <Typography
-                    fontSize={11.5}
-                    color="text.secondary"
-                    noWrap
-                    sx={{ mt: 0.15, lineHeight: 1.2, letterSpacing: 0.1 }}
+                  <Box
+                    component="span"
+                    sx={{
+                      alignSelf: 'flex-start',
+                      px: 0.75,
+                      py: 0.12,
+                      borderRadius: 999,
+                      bgcolor: user.role === 'ADMIN' ? 'rgba(23, 105, 210, 0.08)' : user.role === 'TECNICO' ? 'rgba(34, 163, 101, 0.09)' : 'rgba(101, 85, 196, 0.08)',
+                      color: user.role === 'ADMIN' ? '#1769d2' : user.role === 'TECNICO' ? '#148448' : '#6555c4',
+                      fontSize: 10.5,
+                      fontWeight: 800,
+                      lineHeight: 1.35,
+                      letterSpacing: 0.1,
+                    }}
                   >
-                    {ROLE_LABELS[user.role]}
-                  </Typography>
+                    {shortRoleLabel}
+                  </Box>
                 )}
               </Box>
             </Box>
@@ -264,10 +278,10 @@ export default function Layout() {
           >
             <Box sx={{ px: 2, py: 1.4, maxWidth: 260 }}>
               <Typography fontWeight={700} fontSize={13.5} noWrap>
-                {user?.name}
+                {displayName}
               </Typography>
               <Typography color="text.secondary" fontSize={12} noWrap>
-                {user?.role ? ROLE_LABELS[user.role] : 'Perfil do usuário'}
+                {roleLabel}
               </Typography>
             </Box>
             <Divider />

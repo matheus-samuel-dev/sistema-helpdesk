@@ -235,7 +235,7 @@ function saveDemoState(state: DemoState) {
 function seedDemoState(): DemoState {
   const now = new Date();
   const users: User[] = [
-    user(1, 'Administrador HelpDesk', DEMO_ADMIN_EMAIL, 'ADMIN', daysAgo(now, 35)),
+    user(1, 'Administrador', DEMO_ADMIN_EMAIL, 'ADMIN', daysAgo(now, 35)),
     user(2, 'Joao Analista', 'tecnico@helpdesk.com', 'TECNICO', daysAgo(now, 33)),
     user(3, 'Ana Suporte', 'ana.suporte@helpdesk.com', 'TECNICO', daysAgo(now, 31)),
     user(4, 'Bruno Infra', 'bruno.infra@helpdesk.com', 'TECNICO', daysAgo(now, 28)),
