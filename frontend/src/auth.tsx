@@ -20,6 +20,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       login: async (email: string, password: string, remember: boolean) => {
         const { data } = await api.post('/auth/login', { email, password });
+        if (!data?.token || !data?.user) {
+          throw new Error('Resposta de login inválida.');
+        }
         persistAuth({ token: data.token, user: data.user }, remember);
         setUser(data.user);
       },

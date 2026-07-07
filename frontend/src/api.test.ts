@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { api, errorMessage } from './api';
+import { API_BASE_URL, api, errorMessage, loginErrorMessage } from './api';
 import type { User } from './types';
 import { clearStoredAuth, persistAuth } from './utils/authStorage';
 
@@ -33,6 +33,11 @@ describe('api client', () => {
     });
   });
 
+  it('uses the configured API base URL and request timeout', () => {
+    expect(API_BASE_URL).toBeTruthy();
+    expect(api.defaults.timeout).toBeGreaterThanOrEqual(1000);
+  });
+
   it('normalizes backend error messages', () => {
     const message = errorMessage({
       isAxiosError: true,
@@ -40,6 +45,16 @@ describe('api client', () => {
     });
 
     expect(message).toBe('Falha de validação.');
+  });
+
+  it('maps login errors to friendly messages', () => {
+    expect(loginErrorMessage({ isAxiosError: true, response: { status: 401, data: {} } })).toBe(
+      'E-mail ou senha inválidos.'
+    );
+    expect(loginErrorMessage({ isAxiosError: true, code: 'ECONNABORTED' })).toBe(
+      'Servidor indisponível no momento.'
+    );
+    expect(loginErrorMessage({ isAxiosError: true })).toBe('Não foi possível conectar ao servidor.');
   });
 });
 

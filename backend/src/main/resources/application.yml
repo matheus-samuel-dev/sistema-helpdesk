@@ -12,6 +12,7 @@ spring:
         jdbc.time_zone: UTC
   flyway:
     enabled: true
+    locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
   jackson:
     default-property-inclusion: non_null
 server:

@@ -25,6 +25,7 @@ services:
       DB_PASSWORD: helpdesk
       JWT_SECRET: ${JWT_SECRET:-9zM6R0pR3tY7uW1xC5vB8nK2qF4hJ6sL9dA0gE3iT7oP1mN5}
       CORS_ALLOWED_ORIGIN: http://localhost:5174
+      FLYWAY_LOCATIONS: classpath:db/migration,classpath:db/demo
     ports:
       - "8081:8081"
     depends_on:

@@ -1,150 +1,52 @@
-
-# 🛠️ Sistema HelpDesk
-
-> Sistema Full Stack de Gerenciamento de Chamados desenvolvido com
-> **Java, Spring Boot, React, PostgreSQL e Docker**.
-
 # HelpDesk SaaS
 
-Sistema full stack de gerenciamento de chamados inspirado em ferramentas comerciais de suporte, com foco em regras de negócio reais, RBAC, SLA, anexos, auditoria operacional e experiência de uso profissional.
-
-## Visão Geral
-
-O projeto simula uma operação de atendimento corporativo com três perfis de acesso:
-
-- `ADMIN`: gerencia usuários, acompanha todos os chamados, atribui técnicos, altera prioridades e acessa indicadores globais.
-- `TECNICO`: atende apenas chamados atribuídos a ele, altera status permitidos e interage com comentários/anexos.
-- `CLIENTE`: cria chamados, acompanha seus próprios atendimentos e comenta publicamente, sem acesso a dados de outros clientes.
+Sistema full stack de gerenciamento de chamados inspirado em operações reais de suporte corporativo. O projeto usa Spring Boot Java 21, React TypeScript, PostgreSQL, Flyway, RBAC, JWT, SLA, anexos, recuperação de senha, busca global, dashboard operacional e seed demo para portfólio.
 
 ## Stack
 
-- Backend: Java 21, Spring Boot 3, Spring Web, Spring Security, JWT, Spring Data JPA, Bean Validation, Flyway e PostgreSQL.
+- Backend: Java 21, Spring Boot 3, Spring Security, Spring Data JPA, Bean Validation, Flyway e PostgreSQL.
 - Frontend: React 19, TypeScript, Vite, Material UI, React Router, Axios, React Hook Form, Zod, Vitest e Testing Library.
 - Infraestrutura: Docker, Docker Compose, Nginx e GitHub Actions.
 
-![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)
-![Spring
-Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=for-the-badge&logo=springboot)
-![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
-![JWT](https://img.shields.io/badge/Auth-JWT-black?style=for-the-badge)
+## Perfis
 
-------------------------------------------------------------------------
+- `ADMIN`: acessa tudo, gerencia usuários, atribui técnicos, altera prioridades e acompanha indicadores globais.
+- `TECNICO`: atende apenas chamados atribuídos, comenta, anexa arquivos e altera status permitidos.
+- `CLIENTE`: cria chamados, acompanha seus próprios chamados e comenta publicamente.
 
-## 📚 Sobre
+## Login e API
 
-O Sistema HelpDesk é uma aplicação Full Stack inspirada em plataformas
-corporativas de atendimento técnico. O objetivo é permitir o
-gerenciamento completo de chamados, usuários, categorias e comentários
-em um ambiente seguro, moderno e responsivo.
+Endpoint de login:
 
-## ✨ Funcionalidades
-
--   Login com JWT
--   CRUD de Chamados
--   CRUD de Usuários
--   CRUD de Categorias
--   Comentários por chamado
--   Dashboard
--   Pesquisa e filtros
--   Validação de dados
--   Swagger/OpenAPI
--   Docker Compose
-
-## 🏗️ Arquitetura
-
-``` text
-React
-  │
-Axios
-  │
-Spring Boot
-  │
-Spring Security + JWT
-  │
-Services
-  │
-Repositories (JPA)
-  │
-PostgreSQL
+```text
+POST /api/auth/login
 ```
 
-## 🛠️ Tecnologias
+No frontend, o endpoint final é formado por:
 
-### Backend
-
--   Java 21
--   Spring Boot
--   Spring Security
--   Spring Data JPA
--   Hibernate
--   JWT
--   Flyway
--   Bean Validation
--   Swagger
-
-### Frontend
-
--   React
--   Vite
--   Material UI
--   Axios
-
-### Banco
-
--   PostgreSQL
-
-### Infra
-
--   Docker
--   Docker Compose
--   Nginx
-
-## 📂 Estrutura
-
-``` text
-helpdesk/
-├── backend/
-├── frontend/
-├── docker-compose.yml
-└── README.md
+```text
+VITE_API_URL + /auth/login
 ```
 
-## ▶️ Executando
+Exemplo local:
 
-``` bash
-git clone https://github.com/matheus-samuel-dev/sistema-helpdesk.git
-cd sistema-helpdesk
-docker compose up --build
+```text
+http://localhost:8081/api/auth/login
 ```
 
-Ou execute frontend e backend separadamente.
+O cliente Axios usa timeout configurável por `VITE_API_TIMEOUT_MS`. Em desenvolvimento, o fallback da API é `http://localhost:8081/api`. Em produção, se `VITE_API_URL` não for informado, o fallback passa a ser `${window.location.origin}/api`, evitando chamadas erradas para `localhost` na máquina do usuário.
 
-## 🔐 Segurança
+Mensagens amigáveis de login:
 
--   Spring Security
--   JWT
--   Rotas protegidas
--   Validação de entrada
--   Tratamento centralizado de exceções
-- Autenticação JWT com opção "lembrar de mim".
-- Recuperação de senha com token, expiração e validações.
-- Dashboard operacional com indicadores, gráficos e rankings.
-- Métricas do dashboard calculadas com consultas agregadas no banco sempre que possível, evitando carregar dados desnecessários.
-- Dashboards por perfil, respeitando permissões e escopo de dados.
-- CRUD de chamados com status profissional, prioridade, categoria, SLA e histórico.
-- Timeline do chamado com eventos de criação, atribuição, status, prioridade, categoria, comentários e anexos.
-- Comentários públicos e internos com restrição por perfil.
-- Anexos com validação de tipo, tamanho, download e registro no histórico.
-- Busca global por chamados, usuários, categorias e comentários.
-- Central de atividades com eventos relevantes do sistema.
-- Painel administrativo de usuários exclusivo para ADMIN.
-- Paginação, filtros, ordenação e responsividade.
+- `E-mail ou senha inválidos.`
+- `Não foi possível conectar ao servidor.`
+- `Servidor indisponível no momento.`
 
-## Regras de Negócio
+Erros técnicos são enviados apenas ao console para debug.
 
-### Máquina de estados dos chamados
+## Regras de Chamado
+
+### Status
 
 ```text
 Aberto -> Em andamento -> Resolvido
@@ -154,16 +56,16 @@ Resolvido -> Em andamento
 Cancelado -> sem transições
 ```
 
-Regras aplicadas:
+Regras:
 
 - Todo chamado nasce como `ABERTO`.
 - Não é permitido voltar manualmente para `ABERTO`.
-- Chamados `RESOLVIDO` podem ser reabertos para `EM_ANDAMENTO`.
-- Chamados `CANCELADO` não podem ser reabertos.
-- `CLIENTE` não altera status.
-- `TECNICO` só atua em chamados atribuídos a ele.
+- Chamados resolvidos podem ser reabertos para `EM_ANDAMENTO`.
+- Chamados cancelados não podem ser reabertos.
+- Cliente não altera status.
+- Técnico só altera chamados atribuídos a ele.
 
-### Prioridades e SLA
+### SLA por Prioridade
 
 | Prioridade | SLA |
 |---|---:|
@@ -173,7 +75,7 @@ Regras aplicadas:
 | Urgente | 8 horas |
 | Crítica | 4 horas |
 
-A prioridade `CRÍTICA` é restrita a `ADMIN`. O sistema calcula vencimento, tempo restante, chamados próximos do SLA e chamados vencidos.
+A prioridade `CRITICA` é permitida apenas para `ADMIN`.
 
 ### Categorias
 
@@ -186,56 +88,81 @@ A prioridade `CRÍTICA` é restrita a `ADMIN`. O sistema calcula vencimento, tem
 - Infraestrutura
 - Outros
 
-Os labels das categorias ficam centralizados no enum do backend para evitar duplicação e inconsistência.
+## Dashboard
 
-## Segurança
+O dashboard usa consultas agregadas no banco para contagens por status, prioridade, categoria, técnico, cliente e evolução diária sempre que possível. Métricas que dependem de cálculo de SLA/tempo ainda usam regras de domínio no service.
 
-- API stateless com JWT.
-- RBAC aplicado por perfil e vínculo com o chamado.
-- Proteção contra IDOR: clientes acessam apenas seus chamados; técnicos acessam apenas chamados atribuídos.
-- Senhas armazenadas com BCrypt.
-- Redefinição de senha com token de uso único e expiração.
-- Erros padronizados em JSON.
-- CORS configurável por ambiente.
-- Frontend sem `dangerouslySetInnerHTML`, reduzindo superfície de XSS.
+Indicadores principais:
 
-Observação para produção: o frontend usa `localStorage` quando o usuário marca "lembrar de mim" e `sessionStorage` para sessão temporária. Para produção real com domínio próprio, a evolução recomendada é migrar o JWT para cookie `httpOnly`, `Secure` e `SameSite`, reduzindo exposição em caso de XSS.
+- chamados criados hoje;
+- resolvidos hoje;
+- vencidos pelo SLA;
+- próximos do SLA;
+- dentro do SLA;
+- tempo médio de resolução;
+- produtividade por técnico;
+- chamados por categoria;
+- últimos comentários;
+- últimas alterações.
 
-## Arquitetura
+## Seed Demo
+
+Os dados demo ficam separados em:
 
 ```text
-helpDesk/
-|- backend/
-|  |- src/main/java/com/portfolio/helpdesk/
-|  |  |- auth
-|  |  |- ticket
-|  |  |- dashboard
-|  |  |- comment
-|  |  |- attachment
-|  |  |- activity
-|  |  |- search
-|  |  |- user
-|  |  `- security
-|  `- src/main/resources/db/migration
-|- frontend/
-|  |- src/components
-|  |- src/pages
-|  |- src/utils
-|  `- src/test
-`- .github/workflows
+backend/src/main/resources/db/demo
 ```
 
-O backend organiza regras em services transacionais, controllers finos, DTOs e repositories com consultas agregadas para dashboard. O frontend usa componentes reutilizáveis, rotas lazy-loaded, interceptors Axios e validações com Zod.
+Por padrão, produção usa apenas:
 
-## Banco de Dados e Flyway
+```text
+classpath:db/migration
+```
 
-As migrations criam o schema, usuários de demonstração e recursos evolutivos do produto:
+Para ambiente demo/desenvolvimento com dados preenchidos, use:
 
-- usuários, chamados, histórico e RBAC;
-- categorias, comentários, anexos, atividades e tokens de redefinição;
-- prioridade `CRITICA` com constraint atualizada por migration incremental.
+```text
+FLYWAY_LOCATIONS=classpath:db/migration,classpath:db/demo
+```
 
-Migrations já aplicadas não devem ser reescritas em ambientes persistentes. Novas mudanças devem entrar como novas versões Flyway.
+O `docker-compose.yml` já ativa essa configuração para o ambiente local de demonstração.
+
+A seed demo cria:
+
+- 1 administrador;
+- 3 técnicos;
+- 5 solicitantes;
+- 24 chamados realistas;
+- todos os status;
+- prioridades variadas;
+- categorias variadas;
+- chamados com e sem técnico;
+- comentários;
+- histórico/timeline;
+- eventos para a Central de Atividades;
+- dados para dashboard, produtividade, gráficos, busca global e últimos comentários.
+
+Os registros demo usam prefixo `[Demo]` e a seed limpa/recria apenas esses registros para evitar duplicação.
+
+## Credenciais Demo
+
+Senha padrão:
+
+```text
+Admin@123
+```
+
+| Perfil | E-mail |
+|---|---|
+| ADMIN | `admin@helpdesk.com` |
+| TECNICO | `tecnico@helpdesk.com` |
+| TECNICO | `ana.suporte@helpdesk.com` |
+| TECNICO | `bruno.infra@helpdesk.com` |
+| CLIENTE | `cliente@helpdesk.com` |
+| CLIENTE | `carlos.operacoes@helpdesk.com` |
+| CLIENTE | `fernanda.financeiro@helpdesk.com` |
+| CLIENTE | `rafael.logistica@helpdesk.com` |
+| CLIENTE | `patricia.rh@helpdesk.com` |
 
 ## Execução Local
 
@@ -246,20 +173,26 @@ Pré-requisitos:
 - Node 22+
 - Docker Desktop ou Docker Engine
 
-Subir PostgreSQL:
+Subir com Docker:
+
+```bash
+docker compose up --build
+```
+
+Subir apenas PostgreSQL:
 
 ```bash
 docker compose up postgres -d
 ```
 
-Backend:
+Backend local:
 
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
-Frontend:
+Frontend local:
 
 ```bash
 cd frontend
@@ -274,55 +207,9 @@ Endereços:
 - Swagger UI: `http://localhost:8081/swagger-ui.html`
 - Health check: `http://localhost:8081/actuator/health`
 
-## Docker
-
-```bash
-docker compose up --build
-```
-
-Para encerrar:
-
-## 📡 Swagger
-
-``` text
-http://localhost:8080/swagger-ui.html
-```
-
-## 📸 Screenshots
-
-Para remover volumes:
-
-
-Adicione aqui: - Login - Dashboard - Chamados - Usuários - Categorias
-
-
-## 🚀 Roadmap
-
-## Usuários de Demonstração
-
-Senha padrão: `Admin@123`
-
-| Perfil | E-mail |
-|---|---|
-| ADMIN | `admin@helpdesk.com` |
-| TECNICO | `tecnico@helpdesk.com` |
-| CLIENTE | `cliente@helpdesk.com` |
-
 ## Variáveis de Ambiente
 
-
--   [x] Autenticação JWT
--   [x] CRUD de Chamados
--   [x] CRUD de Usuários
--   [x] CRUD de Categorias
--   [x] Docker
--   [x] Swagger
--   [ ] Upload de anexos
--   [ ] Notificações
--   [ ] Aplicativo Mobile
-
-
-## 👨‍💻 Autor
+Backend:
 
 - `SERVER_PORT`
 - `DB_URL`
@@ -331,27 +218,19 @@ Senha padrão: `Admin@123`
 - `JWT_SECRET`
 - `JWT_EXPIRATION_MS`
 - `CORS_ALLOWED_ORIGIN`
+- `FLYWAY_LOCATIONS`
 
-
-**Matheus Samuel**
-
-
--   GitHub: https://github.com/matheus-samuel-dev
--   LinkedIn: https://linkedin.com/in/matheus-samuel-dev
--   Portfólio: https://matheus-samuel-dev.github.io/Portfolio/
-
-## 📄 Licença
-
-Projeto desenvolvido para fins de estudo, demonstração técnica e
-portfólio.
+Frontend:
 
 - `VITE_API_URL`
+- `VITE_API_TIMEOUT_MS`
 
 Exemplo:
 
 ```bash
 CORS_ALLOWED_ORIGIN=http://localhost:5174,http://127.0.0.1:5174
 VITE_API_URL=http://localhost:8081/api
+VITE_API_TIMEOUT_MS=10000
 ```
 
 ## Testes
@@ -363,16 +242,6 @@ cd backend
 mvn test
 ```
 
-Coberturas unitárias atuais:
-
-- autorização e IDOR em chamados;
-- máquina de estados;
-- prioridade crítica e SLA;
-- anexos;
-- busca global;
-- redefinição de senha;
-- criação de usuários e hash de senha.
-
 Frontend:
 
 ```bash
@@ -383,11 +252,15 @@ npm run build
 
 Coberturas atuais:
 
-- login e recuperação de senha;
+- login e mensagens amigáveis;
 - storage de autenticação;
-- interceptor Axios com Bearer token;
-- regras de prioridade por perfil;
-- opções válidas de transição de status.
+- interceptor Axios e Bearer token;
+- autorização e IDOR;
+- máquina de estados;
+- SLA e prioridade crítica;
+- anexos;
+- busca global;
+- redefinição de senha.
 
 ## CI/CD
 
@@ -396,34 +269,15 @@ O workflow `.github/workflows/ci.yml` executa:
 - `mvn test` no backend;
 - `npm ci`, `npm run test` e `npm run build` no frontend.
 
-Ele roda em pull requests e pushes para `main` ou `master`.
+## Segurança
 
-## Endpoints Principais
+- API stateless com JWT.
+- RBAC por perfil.
+- Proteção contra IDOR.
+- Senhas com BCrypt.
+- CORS configurável.
+- Erros padronizados em JSON.
+- Recuperação de senha com token e expiração.
 
-| Método | Endpoint | Acesso |
-|---|---|---|
-| POST | `/api/auth/login` | Público |
-| POST | `/api/auth/password-reset/request` | Público |
-| POST | `/api/auth/password-reset/confirm` | Público |
-| GET | `/api/auth/me` | Autenticado |
-| GET | `/api/dashboard` | Autenticado |
-| GET | `/api/search` | Autenticado |
-| GET/POST | `/api/tickets` | Conforme perfil |
-| GET/PATCH | `/api/tickets/{id}` | Conforme vínculo |
-| GET | `/api/tickets/{id}/history` | Conforme vínculo |
-| GET/POST | `/api/tickets/{id}/comments` | Conforme vínculo |
-| GET/POST | `/api/tickets/{id}/attachments` | Conforme vínculo |
-| GET | `/api/activities` | Conforme perfil |
-| GET/POST/PUT | `/api/users` | ADMIN |
+Observação: para produção real, recomenda-se migrar JWT de `localStorage/sessionStorage` para cookie `httpOnly`, `Secure` e `SameSite`.
 
-## Deploy
-
-Para produção, recomenda-se:
-
-- configurar `JWT_SECRET` forte por ambiente;
-- usar PostgreSQL gerenciado ou volume persistente;
-- publicar o frontend estático via Nginx/CDN;
-- restringir `CORS_ALLOWED_ORIGIN` ao domínio oficial;
-- habilitar HTTPS;
-- considerar migração do JWT para cookie `httpOnly`;
-- manter GitHub Actions como gate obrigatório antes do deploy.

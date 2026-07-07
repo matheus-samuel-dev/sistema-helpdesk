@@ -26,7 +26,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
-import { api, errorMessage } from '../api';
+import { api, errorMessage, loginErrorMessage, logTechnicalError } from '../api';
 import { APP_NAME, APP_SHORT_DESCRIPTION } from '../config/app';
 
 const schema = z.object({
@@ -63,6 +63,7 @@ export default function Login() {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState('');
   const [error, setError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
 
   const {
     register,
@@ -181,12 +182,19 @@ export default function Login() {
         <Box
           component="form"
           onSubmit={handleSubmit(async (values) => {
+            if (loginLoading) {
+              return;
+            }
             try {
+              setLoginLoading(true);
               setError('');
               await login(values.email, values.password, values.remember);
               navigate('/dashboard');
             } catch (err) {
-              setError(errorMessage(err));
+              logTechnicalError('Falha no login', err);
+              setError(loginErrorMessage(err));
+            } finally {
+              setLoginLoading(false);
             }
           })}
         >
@@ -248,8 +256,8 @@ export default function Login() {
             </Link>
           </Box>
 
-          <Button fullWidth size="large" variant="contained" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
+          <Button fullWidth size="large" variant="contained" type="submit" disabled={isSubmitting || loginLoading}>
+            {isSubmitting || loginLoading ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <CircularProgress size={18} color="inherit" />
                 Entrando...
