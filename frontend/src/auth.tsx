@@ -1,7 +1,8 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { api } from './api';
-import { clearStoredAuth, getStoredUser, persistAuth } from './utils/authStorage';
+import { API_BASE_URL, api } from './api';
+import { clearStoredAuth, getStoredToken, getStoredUser, persistAuth } from './utils/authStorage';
+import { createDemoSession, isDemoCredentials, isDemoToken } from './demo/demoApi';
 import type { User } from './types';
 
 type AuthValue = {
@@ -19,6 +20,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       login: async (email: string, password: string, remember: boolean) => {
+        if (isDemoCredentials(email, password)) {
+          const data = createDemoSession();
+          persistAuth(data, remember);
+          setUser(data.user);
+          console.info('[HelpDesk] Login demo local ativado.', {
+            apiUrl: API_BASE_URL,
+            status: 'offline-demo',
+            cause: 'Credenciais demo/admin usadas; login nao bloqueia cold start do backend.',
+          });
+          return;
+        }
+
         const { data } = await api.post('/auth/login', { email, password });
         if (!data?.token || !data?.user) {
           throw new Error('Resposta de login inválida.');
@@ -27,7 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(data.user);
       },
       logout: () => {
-        api.post('/auth/logout').catch(() => undefined);
+        if (!isDemoToken(getStoredToken())) {
+          api.post('/auth/logout').catch(() => undefined);
+        }
         clearStoredAuth();
         setUser(null);
       },

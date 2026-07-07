@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '../auth';
-import { clearStoredAuth } from '../utils/authStorage';
+import { isDemoToken, resetDemoDataForTests } from '../demo/demoApi';
+import { clearStoredAuth, getStoredToken, getStoredUser } from '../utils/authStorage';
 import Login from './Login';
 
 function renderLogin() {
@@ -19,6 +20,7 @@ function renderLogin() {
 describe('Login', () => {
   afterEach(() => {
     clearStoredAuth();
+    resetDemoDataForTests();
   });
 
   it('renders login actions and remember-me option', () => {
@@ -38,6 +40,16 @@ describe('Login', () => {
 
     expect(screen.getByRole('dialog')).toHaveTextContent(/recupera/i);
     expect(screen.getByRole('button', { name: /gerar token/i })).toBeDisabled();
+  });
+
+  it('logs in immediately with demo admin credentials without calling the backend', async () => {
+    const user = userEvent.setup();
+    renderLogin();
+
+    await user.click(screen.getByRole('button', { name: /entrar/i }));
+
+    expect(isDemoToken(getStoredToken())).toBe(true);
+    expect(getStoredUser()?.email).toBe('admin@helpdesk.com');
   });
 });
 

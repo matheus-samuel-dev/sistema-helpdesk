@@ -36,10 +36,41 @@ http://localhost:8081/api/auth/login
 
 O cliente Axios usa timeout configurável por `VITE_API_TIMEOUT_MS`. Em desenvolvimento, o fallback da API é `http://localhost:8081/api`. Em produção, se `VITE_API_URL` não for informado, o fallback passa a ser `${window.location.origin}/api`, evitando chamadas erradas para `localhost` na máquina do usuário.
 
+### Modo demo/offline para portfólio
+
+Para evitar que o cold start do Render prejudique a primeira impressão, o frontend possui um modo demo local para as credenciais:
+
+```text
+admin@helpdesk.com
+Admin@123
+```
+
+Ao usar essas credenciais, o login é feito imediatamente no navegador, sem bloquear a tela aguardando o backend. O token gerado é um token local de demonstração (`helpdesk-demo-local.*`), não é aceito pelo backend e serve apenas para ativar a camada demo do frontend.
+
+No modo demo, as telas usam dados persistidos em `localStorage`:
+
+- Central de operações;
+- Central de atividades;
+- Chamados;
+- Detalhes do chamado;
+- Novo chamado;
+- Comentários;
+- Timeline;
+- Anexos simulados;
+- Pesquisa global;
+- Filtros;
+- Alteração de status;
+- Atribuição de técnico;
+- Painel de gestão.
+
+As ações principais são simuladas localmente: criar chamado, editar chamado, alterar status, comentar, anexar evidência, criar/editar usuários e atualizar dashboard/timeline/atividades. O refresh mantém a sessão demo e as alterações locais. O logout limpa somente a sessão; os dados demo permanecem para a próxima demonstração.
+
+Logins reais continuam usando `POST /api/auth/login`. Qualquer credencial diferente da demo depende da API configurada em `VITE_API_URL`.
+
 Mensagens amigáveis de login:
 
 - `E-mail ou senha inválidos.`
-- `Não foi possível conectar ao servidor.`
+- `Não foi possível conectar ao servidor. Tente novamente em alguns instantes.`
 - `Servidor indisponível no momento.`
 
 Erros técnicos são enviados apenas ao console para debug.
@@ -280,4 +311,3 @@ O workflow `.github/workflows/ci.yml` executa:
 - Recuperação de senha com token e expiração.
 
 Observação: para produção real, recomenda-se migrar JWT de `localStorage/sessionStorage` para cookie `httpOnly`, `Secure` e `SameSite`.
-
