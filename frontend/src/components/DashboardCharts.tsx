@@ -164,56 +164,130 @@ export function PriorityBarChart({ values }: { values: Record<Priority, number> 
 
 export function DailyVolumeChart({ values }: { values: DailyVolume[] }) {
   const max = Math.max(...values.flatMap((item) => [item.created, item.resolved]), 0);
+  const visualMax = Math.max(1, Math.ceil(max * 1.22));
 
   if (!values.length || max === 0) {
     return (
-      <EmptyState
-        compact
-        title="Sem evolução diária"
-        description="Quando o sistema acumular atividade, você verá a evolução diária dos chamados aqui."
-      />
+      <Box
+        sx={{
+          height: { xs: 220, sm: 240, md: 260, lg: 280 },
+          maxHeight: { xs: 260, md: 300, lg: 320 },
+          display: 'flex',
+          alignItems: 'stretch',
+          '& > *': { flex: 1 },
+        }}
+      >
+        <EmptyState
+          compact
+          title="Sem evolução semanal"
+          description="Os dados aparecerão conforme novos chamados forem criados e resolvidos."
+        />
+      </Box>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', gap: { xs: 1, sm: 1.5 }, alignItems: 'stretch', minHeight: { xs: 260, md: 320, lg: 360 }, height: '100%', pt: 2 }}>
-      {values.map((item, index) => (
-        <Box key={item.date} sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <Tooltip title={`Criados: ${item.created} • Resolvidos: ${item.resolved}`} arrow>
-            <Stack
-              direction="row"
-              spacing={0.6}
-              justifyContent="center"
-              alignItems="end"
-              sx={{ flex: 1, minHeight: 220 }}
-            >
-              <Box
-                sx={{
-                  width: 10,
-                  height: `${Math.max(6, (item.created / max) * 100)}%`,
-                  maxHeight: '100%',
-                  borderRadius: 999,
-                  bgcolor: '#1769d2',
-                  animation: `dashboardRise .45s ease ${index * 0.06}s both`,
-                }}
-              />
-              <Box
-                sx={{
-                  width: 10,
-                  height: `${Math.max(6, (item.resolved / max) * 100)}%`,
-                  maxHeight: '100%',
-                  borderRadius: 999,
-                  bgcolor: '#22a365',
-                  animation: `dashboardRise .45s ease ${(index * 0.06) + 0.05}s both`,
-                }}
-              />
-            </Stack>
-          </Tooltip>
-          <Typography align="center" fontSize={12} color="text.secondary" mt={1}>
-            {formatLocalCalendarDate(item.date)}
+    <Box
+      sx={{
+        height: { xs: 220, sm: 240, md: 260, lg: 280 },
+        maxHeight: { xs: 260, md: 300, lg: 320 },
+        display: 'flex',
+        flexDirection: 'column',
+        pt: 1.5,
+      }}
+    >
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end" mb={1.2}>
+        <Stack direction="row" spacing={0.8} alignItems="center">
+          <Box sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: '#1769d2' }} />
+          <Typography color="text.secondary" fontSize={12}>
+            Criados
           </Typography>
-        </Box>
-      ))}
+        </Stack>
+        <Stack direction="row" spacing={0.8} alignItems="center">
+          <Box sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: '#22a365' }} />
+          <Typography color="text.secondary" fontSize={12}>
+            Resolvidos
+          </Typography>
+        </Stack>
+      </Stack>
+
+      <Box
+        sx={{
+          position: 'relative',
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          gap: { xs: 0.8, sm: 1.2, md: 1.5 },
+          alignItems: 'stretch',
+          borderRadius: 3,
+          px: { xs: 0.4, sm: 1 },
+          pb: 0.5,
+          background:
+            'linear-gradient(to top, rgba(23,32,51,0.07) 1px, transparent 1px), linear-gradient(to top, rgba(23,32,51,0.045) 1px, transparent 1px)',
+          backgroundSize: '100% 50%, 100% 25%',
+        }}
+      >
+        {values.map((item, index) => {
+          const createdHeight = item.created === 0 ? 0 : Math.max(8, (item.created / visualMax) * 100);
+          const resolvedHeight = item.resolved === 0 ? 0 : Math.max(8, (item.resolved / visualMax) * 100);
+
+          return (
+            <Box key={item.date} sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+              <Tooltip title={`Criados: ${item.created} • Resolvidos: ${item.resolved}`} arrow>
+                <Stack
+                  direction="row"
+                  spacing={{ xs: 0.45, sm: 0.6 }}
+                  justifyContent="center"
+                  alignItems="end"
+                  sx={{ flex: 1, minHeight: 0, pt: 0.5 }}
+                >
+                  <Box sx={{ minWidth: 12, textAlign: 'center' }}>
+                    <Typography color="text.secondary" fontSize={10} fontWeight={700} mb={0.45}>
+                      {item.created || ''}
+                    </Typography>
+                    <Box
+                      sx={{
+                        width: { xs: 8, sm: 9, md: 10 },
+                        height: `${createdHeight}%`,
+                        maxHeight: '84%',
+                        minHeight: item.created ? 6 : 0,
+                        mx: 'auto',
+                        borderRadius: '999px 999px 5px 5px',
+                        bgcolor: '#1769d2',
+                        boxShadow: item.created ? '0 8px 16px rgba(23,105,210,0.18)' : 'none',
+                        animation: `dashboardRise .45s ease ${index * 0.06}s both`,
+                        transition: 'height .35s ease',
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ minWidth: 12, textAlign: 'center' }}>
+                    <Typography color="text.secondary" fontSize={10} fontWeight={700} mb={0.45}>
+                      {item.resolved || ''}
+                    </Typography>
+                    <Box
+                      sx={{
+                        width: { xs: 8, sm: 9, md: 10 },
+                        height: `${resolvedHeight}%`,
+                        maxHeight: '84%',
+                        minHeight: item.resolved ? 6 : 0,
+                        mx: 'auto',
+                        borderRadius: '999px 999px 5px 5px',
+                        bgcolor: '#22a365',
+                        boxShadow: item.resolved ? '0 8px 16px rgba(34,163,101,0.18)' : 'none',
+                        animation: `dashboardRise .45s ease ${(index * 0.06) + 0.05}s both`,
+                        transition: 'height .35s ease',
+                      }}
+                    />
+                  </Box>
+                </Stack>
+              </Tooltip>
+              <Typography align="center" fontSize={11} color="text.secondary" mt={1} noWrap>
+                {formatLocalCalendarDate(item.date)}
+              </Typography>
+            </Box>
+          );
+        })}
+      </Box>
     </Box>
   );
 }

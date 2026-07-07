@@ -301,17 +301,27 @@ export default function Dashboard() {
 
       <Grid container spacing={2} mb={2}>
         <Grid size={{ xs: 12, lg: 7 }}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Typography fontWeight={700} mb={1}>
-                Evolução semanal
-              </Typography>
-              <Typography color="text.secondary" fontSize={13}>
-                Criados em azul e resolvidos em verde.
-              </Typography>
-              <Box sx={{ flex: 1, minHeight: 0 }}>
-                <DailyVolumeChart values={data.dailyVolume} />
+          <Card sx={{ height: '100%', maxHeight: { xs: 360, md: 380, lg: 400 }, overflow: 'hidden' }}>
+            <CardContent
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                p: { xs: 2.25, sm: 3 },
+                '&:last-child': { pb: { xs: 2.25, sm: 3 } },
+              }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, alignItems: 'flex-start', mb: 0.5 }}>
+                <Box>
+                  <Typography fontWeight={700} mb={0.4}>
+                    Evolução semanal
+                  </Typography>
+                  <Typography color="text.secondary" fontSize={12.5}>
+                    Criados e resolvidos nos últimos dias.
+                  </Typography>
+                </Box>
               </Box>
+              <DailyVolumeChart values={data.dailyVolume} />
             </CardContent>
           </Card>
         </Grid>
