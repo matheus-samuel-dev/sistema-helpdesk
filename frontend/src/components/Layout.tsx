@@ -11,6 +11,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Menu as MuiMenu,
+  MenuItem,
   Toolbar,
   Tooltip,
   Typography,
@@ -20,22 +22,23 @@ import ConfirmationNumberOutlined from '@mui/icons-material/ConfirmationNumberOu
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import HeadsetMicOutlined from '@mui/icons-material/HeadsetMicOutlined';
 import Logout from '@mui/icons-material/Logout';
-import Menu from '@mui/icons-material/Menu';
+import MenuIcon from '@mui/icons-material/Menu';
 import PeopleOutline from '@mui/icons-material/PeopleOutline';
 import TimelineOutlined from '@mui/icons-material/TimelineOutlined';
 import { useAuth } from '../auth';
 import { APP_NAME, APP_SHORT_DESCRIPTION } from '../config/app';
-import { RoleBadge } from './Badges';
 import GlobalSearch from './GlobalSearch';
-import { getInitials } from '../utils/helpdesk';
+import { ROLE_LABELS, getInitials } from '../utils/helpdesk';
 
 const drawerWidth = 252;
 
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<HTMLElement | null>(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const userMenuOpen = Boolean(userMenuAnchor);
 
   const items: Array<{ to: string; label: string; icon: ReactNode }> = [
     { to: '/dashboard', label: 'Central de operações', icon: <DashboardOutlined /> },
@@ -168,63 +171,130 @@ export default function Layout() {
             sx={{ display: { md: 'none' } }}
             aria-label="Abrir menu lateral"
           >
-            <Menu />
+            <MenuIcon />
           </IconButton>
 
           <Box sx={{ flex: 1, minWidth: { xs: 120, sm: 260 }, maxWidth: { lg: 520 } }}>
             <GlobalSearch />
           </Box>
 
-          <Tooltip title={user ? `${user.name} · ${user.role}` : 'Perfil do usuário'}>
+          <Tooltip title={user ? `${user.name} · ${ROLE_LABELS[user.role]}` : 'Perfil do usuário'}>
             <Box
               component="button"
               type="button"
-              onClick={() => navigate('/dashboard')}
-              aria-label={user ? `Perfil de ${user.name}` : 'Perfil do usuário'}
+              onClick={(event) => setUserMenuAnchor(event.currentTarget)}
+              aria-label={user ? `Abrir menu de ${user.name}` : 'Abrir menu do usuário'}
+              aria-haspopup="menu"
+              aria-expanded={userMenuOpen ? 'true' : undefined}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: { xs: 'center', sm: 'flex-start' },
-                gap: { xs: 0, sm: 1.2 },
-                minWidth: { xs: 42, sm: 0 },
-                maxWidth: { xs: 42, sm: 260 },
-                height: 46,
+                justifyContent: 'flex-start',
+                gap: { xs: 0, sm: 1 },
+                minWidth: { xs: 38, sm: 170 },
+                maxWidth: { xs: 38, sm: 220 },
+                height: 44,
                 px: { xs: 0, sm: 0.8 },
-                py: 0.4,
-                border: '1px solid',
-                borderColor: 'rgba(148, 163, 184, 0.28)',
-                borderRadius: 999,
-                bgcolor: 'rgba(248, 250, 252, 0.78)',
+                py: 0.35,
+                border: '1px solid transparent',
+                borderRadius: 2,
+                bgcolor: 'transparent',
                 color: 'inherit',
                 cursor: 'pointer',
-                transition: 'background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease',
+                font: 'inherit',
+                transition: 'background-color .18s ease, border-color .18s ease',
                 '&:hover': {
-                  bgcolor: 'white',
-                  borderColor: 'rgba(23, 105, 210, 0.28)',
-                  boxShadow: '0 12px 28px rgba(20, 34, 60, 0.08)',
-                  transform: 'translateY(-1px)',
+                  bgcolor: 'rgba(15, 23, 42, 0.045)',
+                  borderColor: 'rgba(148, 163, 184, 0.18)',
                 },
                 '&:focus-visible': {
                   outline: '3px solid rgba(23, 105, 210, 0.22)',
                   outlineOffset: 2,
                 },
-                '& .MuiChip-root': {
-                  height: 22,
-                  fontSize: 11,
-                },
               }}
             >
-              <Avatar sx={{ width: 36, height: 36, bgcolor: '#dbe8f8', color: '#1769d2', fontWeight: 800, fontSize: 14 }}>
+              <Avatar
+                sx={{
+                  width: { xs: 36, sm: 38 },
+                  height: { xs: 36, sm: 38 },
+                  bgcolor: '#e8eef6',
+                  color: '#0f2746',
+                  fontWeight: 800,
+                  fontSize: 13,
+                  border: '1px solid rgba(15, 39, 70, 0.08)',
+                }}
+              >
                 {getInitials(user?.name)}
               </Avatar>
-              <Box sx={{ display: { xs: 'none', sm: 'block' }, minWidth: 0, textAlign: 'left' }}>
-                <Typography fontWeight={800} fontSize={13} noWrap sx={{ lineHeight: 1.1 }}>
+              <Box sx={{ display: { xs: 'none', sm: 'block' }, minWidth: 0, textAlign: 'left', flex: 1 }}>
+                <Typography fontWeight={650} fontSize={13.5} noWrap sx={{ lineHeight: 1.15, color: '#172033' }}>
                   {user?.name}
                 </Typography>
-                {user?.role && <RoleBadge value={user.role} />}
+                {user?.role && (
+                  <Typography
+                    fontSize={11.5}
+                    color="text.secondary"
+                    noWrap
+                    sx={{ mt: 0.15, lineHeight: 1.2, letterSpacing: 0.1 }}
+                  >
+                    {ROLE_LABELS[user.role]}
+                  </Typography>
+                )}
               </Box>
             </Box>
           </Tooltip>
+
+          <MuiMenu
+            anchorEl={userMenuAnchor}
+            open={userMenuOpen}
+            onClose={() => setUserMenuAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            slotProps={{
+              paper: {
+                sx: {
+                  mt: 1,
+                  minWidth: 238,
+                  borderRadius: 2.5,
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 18px 46px rgba(15, 23, 42, 0.14)',
+                },
+              },
+            }}
+          >
+            <Box sx={{ px: 2, py: 1.4, maxWidth: 260 }}>
+              <Typography fontWeight={700} fontSize={13.5} noWrap>
+                {user?.name}
+              </Typography>
+              <Typography color="text.secondary" fontSize={12} noWrap>
+                {user?.role ? ROLE_LABELS[user.role] : 'Perfil do usuário'}
+              </Typography>
+            </Box>
+            <Divider />
+            <MenuItem
+              onClick={() => {
+                setUserMenuAnchor(null);
+                navigate('/dashboard');
+              }}
+            >
+              <ListItemIcon>
+                <DashboardOutlined fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Central de operações" />
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                setUserMenuAnchor(null);
+                logout();
+                navigate('/login');
+              }}
+            >
+              <ListItemIcon>
+                <Logout fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Sair" />
+            </MenuItem>
+          </MuiMenu>
         </Toolbar>
       </AppBar>
 
